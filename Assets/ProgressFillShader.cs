@@ -12,6 +12,7 @@ public class ProgressFillShader : MonoBehaviour
     Vector3 p1;
     Vector3 p2;
     Vector3 p3;
+    Vector3 cube;
 
     // Start is called before the first frame update
     void Start()
@@ -26,32 +27,33 @@ public class ProgressFillShader : MonoBehaviour
         p1 = HandTracking.point_1;
         p2 = HandTracking.point_2;
         p3 = HandTracking.point_3;
+        cube = HandTracking.cube;
 
-        //Debug.Log(HandTracking.indextip);
-        if ((IndexTip.z >= 0.6 && IndexTip.z <= 0.8) && (IndexTip.x >= 0.1 && IndexTip.x <= 0.3 && IndexTip.y >= -0.1 && IndexTip.y <= 0.1))
+        if ((IndexTip.z >= (cube.z - 0.1) && IndexTip.z <= (cube.z +0.1)) && (IndexTip.x >= 0.1 && IndexTip.x <= 0.3 && IndexTip.y >= -0.1 && IndexTip.y <= 0.1))
         {
-            if ((p1.z >= 0.6 && p1.z <= 0.62) && (p1.x >= 0.1 && p1.x <= 0.3 && p1.y >= -0.1 && p1.y <= 0.1)) // 첫째 마디 들어옴
+            if ((p1.z >= (cube.z - 0.1) && p1.z <= (cube.z - 0.08)) && (p1.x >= 0.1 && p1.x <= 0.3 && p1.y >= -0.1 && p1.y <= 0.1)) // 첫째 마디 들어옴
             {
                 c = Color.red;   // one click
             }
-            else if ((p2.z >= 0.6 && p2.z <= 0.62) && (p2.x >= 0.1 && p2.x <= 0.3 && p2.y >= -0.1 && p2.y <= 0.1))
+            else if ((p2.z >= (cube.z - 0.1) && p2.z <= (cube.z - 0.08)) && (p2.x >= 0.1 && p2.x <= 0.3 && p2.y >= -0.1 && p2.y <= 0.1))
             {
                 c = Color.green;
             }
-            else if ((p3.z >= 0.6 && p3.z <= 0.62) && (p3.x >= 0.1 && p3.x <= 0.3 && p3.y >= -0.1 && p3.y <= 0.1))
+            else if ((p3.z >= (cube.z - 0.1) && p3.z <= (cube.z - 0.08)) && (p3.x >= 0.1 && p3.x <= 0.3 && p3.y >= -0.1 && p3.y <= 0.1))
             {
                 c = Color.blue;
             }
-            else if (p3.z > 0.62 && (p3.x >= 0.1 && p3.x <= 0.3 && p3.y >= -0.1 && p3.y <= 0.1))
+            else if (p3.z > (cube.z - 0.08) && (p3.x >= 0.1 && p3.x <= 0.3 && p3.y >= -0.1 && p3.y <= 0.1))
             {
                 c = Color.black;
             }
-            progressBorder = (float)((IndexTip.z - 0.6) / 0.2 - 0.5);
+            progressBorder = (float)((IndexTip.z - (cube.z - 0.1)) / 0.2 - 0.5);
         }
         else
         {
             progressBorder = (float)-0.6;
         }
+ 
         objectMaterial.SetFloat(name: "_ProgressBorder", progressBorder);
         objectMaterial.SetColor(name: "_FillColor", c);
 
