@@ -41,7 +41,12 @@ public class HandTracking : MonoBehaviour
     public float timer_3 = 0;
     public float timer_stop = 0;
     Boolean stop = false;
-    
+    float d_click_t = 0.5f;
+    Boolean IsOneClick = false;
+    Boolean IsDoubleClick = false;
+    Boolean Pressed = true;
+    Boolean Depressed = false;
+
     public TMP_Text CLK;
     TMP_Text click;
     double past_point_1 = 0;
@@ -67,7 +72,7 @@ public class HandTracking : MonoBehaviour
     public static Vector3 point_3;
 
     // for various interaction design
-    int mode = 2;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
+    int mode = 3;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
 
     private string serverIP;
 
@@ -202,7 +207,7 @@ public class HandTracking : MonoBehaviour
                     if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                     {
                         timer_3 += Time.deltaTime;
-                        if (timer_3 >= 1)
+                        if (timer_3 >= 1f)
                         {
                             click.text = "Right Click!";
                             stop = true;
@@ -218,7 +223,7 @@ public class HandTracking : MonoBehaviour
                     if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
                     {
                         timer_2 += Time.deltaTime;
-                        if (timer_2 >= 1)
+                        if (timer_2 >= 1f)
                         {
                             click.text = "Double Click!";
                             stop = true;
@@ -234,7 +239,7 @@ public class HandTracking : MonoBehaviour
                     if (point_1.z >= 0.6 && point_1.z <= 0.62 && past_point_1 >= 0.6 && past_point_1 <= 0.62)
                     {
                         timer_1 += Time.deltaTime;
-                        if (timer_1 >= 1)
+                        if (timer_1 >= 1f)
                         {
                             click.text = "One Click!";
                             stop = true;
@@ -252,7 +257,7 @@ public class HandTracking : MonoBehaviour
             {
                 timer_stop += Time.deltaTime;
 
-                if (timer_stop >= 0.5)
+                if (timer_stop >= 0.5f)
                 {
                     stop = false;
 
@@ -274,9 +279,9 @@ public class HandTracking : MonoBehaviour
 
                     if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08 && past_point_3 >= cube.z - 0.1 && past_point_3 <= cube.z - 0.08)
                     {
-                        PIcube.transform.position = new Vector3((float)0.2, 0, (float)(PIcube.transform.position.z + 0.00002));
+                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
                         timer_3 += Time.deltaTime;
-                        if (timer_3 >= 1)
+                        if (timer_3 >= 1f)
                         {
                             click.text = "Right Click!";
                             stop = true;
@@ -291,9 +296,9 @@ public class HandTracking : MonoBehaviour
 
                     if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
                     {
-                        PIcube.transform.position = new Vector3((float)0.2, 0, (float)(PIcube.transform.position.z + 0.00002));
+                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
                         timer_2 += Time.deltaTime;
-                        if (timer_2 >= 1)
+                        if (timer_2 >= 1f)
                         {
                             click.text = "Double Click!";
                             stop = true;
@@ -308,9 +313,9 @@ public class HandTracking : MonoBehaviour
 
                     if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08 && past_point_1 >= cube.z - 0.1 && past_point_1 <= cube.z - 0.08)
                     {
-                        PIcube.transform.position = new Vector3((float)0.2, 0, (float)(PIcube.transform.position.z + 0.00002));
+                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
                         timer_1 += Time.deltaTime;
-                        if (timer_1 >= 1)
+                        if (timer_1 >= 1f)
                         {
                             click.text = "One Click!";
                             stop = true;
@@ -328,7 +333,7 @@ public class HandTracking : MonoBehaviour
             {
                 timer_stop += Time.deltaTime;
 
-                if (timer_stop >= 0.5)
+                if (timer_stop >= 0.5f)
                 {
                     stop = false;
 
@@ -340,7 +345,7 @@ public class HandTracking : MonoBehaviour
 
 
                 }
-                PIcube.transform.position = new Vector3((float)0.2, 0, (float)0.7);
+                PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
             }
         }
         else if (mode == 3) // ID_3
@@ -348,12 +353,71 @@ public class HandTracking : MonoBehaviour
             if (stop == false)
             {
                 // implement ID_3
+                if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+                {
+                    if (point_2.z >= 0.6 && past_point_2 >= 0.6)
+                    {
+                        Pressed = true;
+                        Depressed = false;
+                        //IsOneClick = false;
+                        timer_3 += Time.deltaTime;
+                        if (timer_3 >= 1.5f)
+                        {
+                            click.text = "Right Click!";
+                            stop = true;
+                            timer_3 = 0;
+                            Pressed = false;
+                        }
+                    }
+                    else
+                    {
+                        Pressed = false;
+                        if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed == true)
+                        {
+                            click.text = "One Click!";
+                            IsOneClick = false;
+                            Pressed = true;
+                            stop = true;
+                            timer_2 = 0;
+                        }
+
+                        if (point_2.z >= 0.6 && Pressed == false)
+                        {
+                            Depressed = false;
+                            IsDoubleClick = false;
+                            if (!IsOneClick)
+                            {
+                                timer_2 = Time.time;
+                                IsOneClick = true;
+                            }
+
+                            else if (IsOneClick && ((Time.time - timer_2) < d_click_t))
+                            {
+                                IsDoubleClick = true;
+                            }
+                        }
+                        else if (point_2.z < 0.6)
+                        {
+                            Depressed = true;
+
+                            if (IsDoubleClick)
+                            {
+                                click.text = "Double Click!";
+                                IsOneClick = false;
+                                IsDoubleClick = false;
+                                Pressed = true;
+                                stop = true;
+                                timer_2 = 0;
+                            }
+                        }
+                    }
+                }
             }
             else
             {
                 timer_stop += Time.deltaTime;
 
-                if (timer_stop >= 0.5)
+                if (timer_stop >= 0.5f)
                 {
                     stop = false;
 
@@ -362,6 +426,9 @@ public class HandTracking : MonoBehaviour
                     timer_3 = 0;
                     timer_stop = 0;
                     click.text = "CLK";
+                    Pressed = true;
+                    Depressed = true;
+                    IsOneClick = false;
                 }
             }
         }
@@ -375,7 +442,7 @@ public class HandTracking : MonoBehaviour
             {
                 timer_stop += Time.deltaTime;
 
-                if (timer_stop >= 0.5)
+                if (timer_stop >= 0.5f)
                 {
                     stop = false;
 

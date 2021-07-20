@@ -51,7 +51,7 @@ public class ProgressFillShader : MonoBehaviour
         }
         else
         {
-            progressBorder = (float)-0.6;
+            progressBorder = -0.6f;
         }
  
         objectMaterial.SetFloat(name: "_ProgressBorder", progressBorder);
