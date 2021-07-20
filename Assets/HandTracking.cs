@@ -46,6 +46,7 @@ public class HandTracking : MonoBehaviour
     Boolean IsDoubleClick = false;
     Boolean Pressed = true;
     Boolean Depressed = false;
+    double pos_2 = -100;   // for mode 4 deciding whether right-click or not
 
     public TMP_Text CLK;
     TMP_Text click;
@@ -72,7 +73,7 @@ public class HandTracking : MonoBehaviour
     public static Vector3 point_3;
 
     // for various interaction design
-    int mode = 3;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
+    int mode = 4;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
 
     private string serverIP;
 
@@ -108,35 +109,34 @@ public class HandTracking : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*
         indexObject1.GetComponent<Renderer>().enabled = false;
         indexObject2.GetComponent<Renderer>().enabled = false;
         indexObject3.GetComponent<Renderer>().enabled = false;
-        indexObject4.GetComponent<Renderer>().enabled = false;*/
+        indexObject4.GetComponent<Renderer>().enabled = false;
         cube = PIcube.transform.position;
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, Handedness.Right, out pose))
         {
-            //indexObject1.GetComponent<Renderer>().enabled = true;
+            indexObject1.GetComponent<Renderer>().enabled = true;
             indexObject1.transform.position = pose.Position;
             indextip = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexDistalJoint, Handedness.Right, out pose))
         {
-            //indexObject2.GetComponent<Renderer>().enabled = true;
+            indexObject2.GetComponent<Renderer>().enabled = true;
             indexObject2.transform.position = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexMiddleJoint, Handedness.Right, out pose))
         {
-            //indexObject3.GetComponent<Renderer>().enabled = true;
+            indexObject3.GetComponent<Renderer>().enabled = true;
             indexObject3.transform.position = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexKnuckle, Handedness.Right, out pose))
         {
-            //indexObject4.GetComponent<Renderer>().enabled = true;
+            indexObject4.GetComponent<Renderer>().enabled = true;
             indexObject4.transform.position = pose.Position;
         }
 
@@ -150,35 +150,23 @@ public class HandTracking : MonoBehaviour
             if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)) // 손끝 들어옴
             {
                 data = 2;
-                //sr.material.color = Color.black;
-
+                tot_len = indexObject1.transform.position.z - indexObject4.transform.position.z;
                 if (point_1.z >= cube.z - 0.1 && (point_1.x >= 0.1 && point_1.x <= 0.3 && point_1.y >= -0.1 && point_1.y <= 0.1)) // 첫째 마디 들어옴
                 {
-                    tot_len = indexObject1.transform.position.z - indexObject4.transform.position.z;
-                    //Debug.Log(tot_len);
                     data = 2 - ((indexObject1.transform.position.z - point_1.z) / tot_len) * 2;  // max_data = 2
-
-                    //sr.material.color = Color.red;   // one click
 
                     if (point_2.z >= cube.z - 0.1 && (point_2.x >= 0.1 && point_2.x <= 0.3 && point_2.y >= -0.1 && point_2.y <= 0.1)) // 둘째 마디 들어옴
                     {
-                        tot_len = indexObject1.transform.position.z - indexObject4.transform.position.z;
                         data = 2 - ((indexObject1.transform.position.z - point_2.z) / tot_len) * 2;
-
-                        //sr.material.color = Color.green;
 
                         if (point_3.z >= cube.z - 0.1 && (point_3.x >= 0.1 && point_3.x <= 0.3 && point_3.y >= -0.1 && point_3.y <= 0.1)) // 셋째 마디 들어옴
                         {
-                            tot_len = indexObject1.transform.position.z - indexObject4.transform.position.z;
                             data = 2 - ((indexObject1.transform.position.z - point_3.z) / tot_len) * 2;
-
-                            //sr.material.color = Color.blue;
                         }
 
                         if (indexObject4.transform.position.z >= cube.z - 0.1 && (indexObject4.transform.position.x >= 0.1 && indexObject4.transform.position.x <= 0.3 && indexObject4.transform.position.y >= -0.1 && indexObject4.transform.position.y <= 0.1))
                         {
                             data = 0;
-                            //sr.material.color = Color.white;
                         }
                     }
                 }
@@ -186,13 +174,11 @@ public class HandTracking : MonoBehaviour
             else
             {
                 data = -1;
-                //sr.material.color = Color.white;
             }
         }
         else
         {
             data = -1;
-            //sr.material.color = Color.white;
         }
 
 
@@ -217,7 +203,7 @@ public class HandTracking : MonoBehaviour
                     else
                     {
                         //Debug.Log("Not satisfied 333");
-                        timer_3 = (float) 0;
+                        timer_3 = 0;
                     }
 
                     if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
@@ -290,8 +276,7 @@ public class HandTracking : MonoBehaviour
                     }
                     else
                     {
-                        //Debug.Log("Not satisfied 333");
-                        timer_3 = (float)0;
+                        timer_3 = 0;
                     }
 
                     if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
@@ -307,7 +292,6 @@ public class HandTracking : MonoBehaviour
                     }
                     else
                     {
-                        //Debug.Log("Not satisfied 222");
                         timer_2 = 0;
                     }
 
@@ -324,7 +308,6 @@ public class HandTracking : MonoBehaviour
                     }
                     else
                     {
-                        //Debug.Log("Not satisfied111");
                         timer_1 = 0;
                     }
                 }
@@ -342,8 +325,6 @@ public class HandTracking : MonoBehaviour
                     timer_3 = 0;
                     timer_stop = 0;
                     click.text = "CLK";
-
-
                 }
                 PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
             }
@@ -359,8 +340,8 @@ public class HandTracking : MonoBehaviour
                     {
                         Pressed = true;
                         Depressed = false;
-                        //IsOneClick = false;
                         timer_3 += Time.deltaTime;
+
                         if (timer_3 >= 1.5f)
                         {
                             click.text = "Right Click!";
@@ -420,8 +401,6 @@ public class HandTracking : MonoBehaviour
                 if (timer_stop >= 0.5f)
                 {
                     stop = false;
-
-                    timer_1 = 0;
                     timer_2 = 0;
                     timer_3 = 0;
                     timer_stop = 0;
@@ -437,6 +416,51 @@ public class HandTracking : MonoBehaviour
             if (stop == false)
             {
                 // implement ID_4
+                if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+                {
+                    if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
+                    {
+                        timer_2 += Time.deltaTime;
+                        if (timer_2 >= 1f)
+                        {
+                            click.text = "Double Click!";
+                            stop = true;
+                            timer_2 = 0;
+                        }
+                    }
+                    else
+                    {
+                        timer_2 = 0;
+                    }
+
+                    if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
+                    {
+                        timer_1 += Time.deltaTime;
+                        if (pos_2 == -100)
+                        {
+                            pos_2 = point_2.x;
+                        }
+                        if (timer_1 >= 1f)
+                        {
+                            if (point_2.x - pos_2 >= 0.1) {
+                                click.text = "Right Click!";
+                                stop = true;
+                            }
+                            else
+                            {
+                                click.text = "One Click!";
+                                stop = true;
+                            }
+                            timer_1 = 0;
+                            pos_2 = -100;
+                        }
+                    }
+                    else
+                    {
+                        timer_1 = 0;
+                        pos_2 = -100;
+                    }
+                }
             }
             else
             {
@@ -448,7 +472,6 @@ public class HandTracking : MonoBehaviour
 
                     timer_1 = 0;
                     timer_2 = 0;
-                    timer_3 = 0;
                     timer_stop = 0;
                     click.text = "CLK";
                 }
