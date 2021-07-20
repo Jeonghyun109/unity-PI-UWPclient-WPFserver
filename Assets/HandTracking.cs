@@ -73,7 +73,7 @@ public class HandTracking : MonoBehaviour
     public static Vector3 point_3;
 
     // for various interaction design
-    int mode = 4;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
+    int mode = 1;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
 
     private string serverIP;
 
