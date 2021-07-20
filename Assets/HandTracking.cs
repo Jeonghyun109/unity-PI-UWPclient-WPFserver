@@ -190,52 +190,52 @@ public class HandTracking : MonoBehaviour
             {
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
                 {
-                    if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
+                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
                     {
-                        timer_3 += Time.deltaTime;
-                        if (timer_3 >= 1f)
+                        if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                         {
-                            click.text = "Right Click!";
-                            stop = true;
+                            timer_3 += Time.deltaTime;
+                            if (timer_3 >= 1f)
+                            {
+                                click.text = "Right Click!";
+                                stop = true;
+                                timer_3 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_3 = 0;
                         }
-                    }
-                    else
-                    {
-                        //Debug.Log("Not satisfied 333");
-                        timer_3 = 0;
-                    }
 
-                    if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
-                    {
-                        timer_2 += Time.deltaTime;
-                        if (timer_2 >= 1f)
+                        if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
                         {
-                            click.text = "Double Click!";
-                            stop = true;
+                            timer_2 += Time.deltaTime;
+                            if (timer_2 >= 1f)
+                            {
+                                click.text = "Double Click!";
+                                stop = true;
+                                timer_2 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_2 = 0;
                         }
-                    }
-                    else
-                    {
-                        //Debug.Log("Not satisfied 222");
-                        timer_2 = 0;
-                    }
 
-                    if (point_1.z >= 0.6 && point_1.z <= 0.62 && past_point_1 >= 0.6 && past_point_1 <= 0.62)
-                    {
-                        timer_1 += Time.deltaTime;
-                        if (timer_1 >= 1f)
+                        if (point_1.z >= 0.6 && point_1.z <= 0.62 && past_point_1 >= 0.6 && past_point_1 <= 0.62)
                         {
-                            click.text = "One Click!";
-                            stop = true;
+                            timer_1 += Time.deltaTime;
+                            if (timer_1 >= 1f)
+                            {
+                                click.text = "One Click!";
+                                stop = true;
+                                timer_1 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_1 = 0;
                         }
-                    }
-                    else
-                    {
-                        //Debug.Log("Not satisfied111");
-                        timer_1 = 0;
                     }
                 }
             }
@@ -262,53 +262,55 @@ public class HandTracking : MonoBehaviour
             {
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
                 {
-
-                    if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08 && past_point_3 >= cube.z - 0.1 && past_point_3 <= cube.z - 0.08)
+                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
                     {
-                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                        timer_3 += Time.deltaTime;
-                        if (timer_3 >= 1f)
+                        if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08 && past_point_3 >= cube.z - 0.1 && past_point_3 <= cube.z - 0.08)
                         {
-                            click.text = "Right Click!";
-                            stop = true;
+                            PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
+                            timer_3 += Time.deltaTime;
+                            if (timer_3 >= 1f)
+                            {
+                                click.text = "Right Click!";
+                                stop = true;
+                                timer_3 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_3 = 0;
                         }
-                    }
-                    else
-                    {
-                        timer_3 = 0;
-                    }
 
-                    if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
-                    {
-                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                        timer_2 += Time.deltaTime;
-                        if (timer_2 >= 1f)
+                        if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
                         {
-                            click.text = "Double Click!";
-                            stop = true;
+                            PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
+                            timer_2 += Time.deltaTime;
+                            if (timer_2 >= 1f)
+                            {
+                                click.text = "Double Click!";
+                                stop = true;
+                                timer_2 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_2 = 0;
                         }
-                    }
-                    else
-                    {
-                        timer_2 = 0;
-                    }
 
-                    if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08 && past_point_1 >= cube.z - 0.1 && past_point_1 <= cube.z - 0.08)
-                    {
-                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                        timer_1 += Time.deltaTime;
-                        if (timer_1 >= 1f)
+                        if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08 && past_point_1 >= cube.z - 0.1 && past_point_1 <= cube.z - 0.08)
                         {
-                            click.text = "One Click!";
-                            stop = true;
+                            PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
+                            timer_1 += Time.deltaTime;
+                            if (timer_1 >= 1f)
+                            {
+                                click.text = "One Click!";
+                                stop = true;
+                                timer_1 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_1 = 0;
                         }
-                    }
-                    else
-                    {
-                        timer_1 = 0;
                     }
                 }
             }
@@ -336,59 +338,62 @@ public class HandTracking : MonoBehaviour
                 // implement ID_3
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
                 {
-                    if (point_2.z >= 0.6 && past_point_2 >= 0.6)
+                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
                     {
-                        Pressed = true;
-                        Depressed = false;
-                        timer_3 += Time.deltaTime;
-
-                        if (timer_3 >= 1.5f)
+                        if (point_2.z >= 0.6 && past_point_2 >= 0.6)
                         {
-                            click.text = "Right Click!";
-                            stop = true;
-                            timer_3 = 0;
-                            Pressed = false;
-                        }
-                    }
-                    else
-                    {
-                        Pressed = false;
-                        if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed == true)
-                        {
-                            click.text = "One Click!";
-                            IsOneClick = false;
                             Pressed = true;
-                            stop = true;
-                            timer_2 = 0;
-                        }
-
-                        if (point_2.z >= 0.6 && Pressed == false)
-                        {
                             Depressed = false;
-                            IsDoubleClick = false;
-                            if (!IsOneClick)
-                            {
-                                timer_2 = Time.time;
-                                IsOneClick = true;
-                            }
+                            timer_3 += Time.deltaTime;
 
-                            else if (IsOneClick && ((Time.time - timer_2) < d_click_t))
+                            if (timer_3 >= 1.5f)
                             {
-                                IsDoubleClick = true;
+                                click.text = "Right Click!";
+                                stop = true;
+                                timer_3 = 0;
+                                Pressed = false;
                             }
                         }
-                        else if (point_2.z < 0.6)
+                        else
                         {
-                            Depressed = true;
-
-                            if (IsDoubleClick)
+                            Pressed = false;
+                            if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed == true)
                             {
-                                click.text = "Double Click!";
+                                click.text = "One Click!";
                                 IsOneClick = false;
-                                IsDoubleClick = false;
                                 Pressed = true;
                                 stop = true;
                                 timer_2 = 0;
+                            }
+
+                            if (point_2.z >= 0.6 && Pressed == false)
+                            {
+                                Depressed = false;
+                                IsDoubleClick = false;
+                                if (!IsOneClick)
+                                {
+                                    timer_2 = Time.time;
+                                    IsOneClick = true;
+                                }
+
+                                else if (IsOneClick && ((Time.time - timer_2) < d_click_t))
+                                {
+                                    IsDoubleClick = true;
+                                }
+                            }
+                            else if (point_2.z < 0.6)
+                            {
+                                Depressed = true;
+
+                                if (IsDoubleClick)
+                                {
+                                    click.text = "Double Click!";
+                                    IsOneClick = false;
+                                    IsDoubleClick = false;
+                                    Pressed = true;
+                                    stop = true;
+                                    timer_2 = 0;
+                                }
                             }
                         }
                     }
@@ -418,47 +423,59 @@ public class HandTracking : MonoBehaviour
                 // implement ID_4
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
                 {
-                    if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
+                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
                     {
-                        timer_2 += Time.deltaTime;
-                        if (timer_2 >= 1f)
+                        if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                         {
-                            click.text = "Double Click!";
-                            stop = true;
+                            timer_2 += Time.deltaTime;
+                            if (timer_2 >= 1f)
+                            {
+                                click.text = "Double Click!";
+                                stop = true;
+                                timer_2 = 0;
+                            }
+                        }
+                        else
+                        {
                             timer_2 = 0;
                         }
-                    }
-                    else
-                    {
-                        timer_2 = 0;
-                    }
-
-                    if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
-                    {
-                        timer_1 += Time.deltaTime;
-                        if (pos_2 == -100)
+                        if (point_2.z >= 0.6 && point_3.z <= 0.62 && past_point_2 >= 0.6 && past_point_3 <= 0.62)
                         {
-                            pos_2 = point_2.x;
-                        }
-                        if (timer_1 >= 1f)
-                        {
-                            if (point_2.x - pos_2 >= 0.1) {
+                            timer_3 += Time.deltaTime;
+                            if (pos_2 == -100)
+                            {
+                                pos_2 = point_2.x;
+                            }
+                            if (timer_3 >= 1f && (point_2.x - pos_2) >= 0.1)
+                            {
                                 click.text = "Right Click!";
                                 stop = true;
+                                timer_3 = 0;
+                                pos_2 = -100;
+                            }
+
+                            if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
+                            {
+                                timer_1 += Time.deltaTime;
+
+                                if (timer_1 >= 1f && timer_3 == 0)
+                                {
+                                    click.text = "One Click!";
+                                    stop = true;
+                                    timer_1 = 0;
+                                }
                             }
                             else
                             {
-                                click.text = "One Click!";
-                                stop = true;
+                                timer_1 = 0;
                             }
+                        }
+                        else
+                        {
                             timer_1 = 0;
+                            timer_3 = 0;
                             pos_2 = -100;
                         }
-                    }
-                    else
-                    {
-                        timer_1 = 0;
-                        pos_2 = -100;
                     }
                 }
             }
