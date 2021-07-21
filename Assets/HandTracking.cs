@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 using TMPro;
 
@@ -35,6 +36,7 @@ public class HandTracking : MonoBehaviour
 
     public GameObject sphereMarker;
     public GameObject PIcube;
+    public Dropdown Select;
     //Renderer sr;
     public float timer_1 = 0;
     public float timer_2 = 0;
@@ -100,6 +102,7 @@ public class HandTracking : MonoBehaviour
         indexObject4 = Instantiate(sphereMarker, this.transform);   // for IndexKnuckle
 
         click = Instantiate(CLK, this.transform);
+
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
