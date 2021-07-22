@@ -37,6 +37,9 @@ public class HandTracking : MonoBehaviour
     public GameObject sphereMarker;
     public GameObject PIcube;
     public Dropdown Select;
+    private List<String> options = new List<String>();
+    public GameObject sphere;
+    Renderer C;
     //Renderer sr;
     public float timer_1 = 0;
     public float timer_2 = 0;
@@ -102,7 +105,9 @@ public class HandTracking : MonoBehaviour
         indexObject4 = Instantiate(sphereMarker, this.transform);   // for IndexKnuckle
 
         click = Instantiate(CLK, this.transform);
+        C = sphere.GetComponent<Renderer>();
 
+        SetDropdown();
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -200,7 +205,7 @@ public class HandTracking : MonoBehaviour
                             timer_3 += Time.deltaTime;
                             if (timer_3 >= 1f)
                             {
-                                click.text = "Right Click!";
+                                click.text = "Right Click!"; // 한 칸씩 위로 이동
                                 stop = true;
                                 timer_3 = 0;
                             }
@@ -213,9 +218,36 @@ public class HandTracking : MonoBehaviour
                         if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
                         {
                             timer_2 += Time.deltaTime;
+                            Select.Show();
+                            
                             if (timer_2 >= 1f)
                             {
-                                click.text = "Double Click!";
+                                click.text = "Double Click!";   // 선택(if dropdown close ? open : select item)
+                                
+                                /*if (Select.IsExpanded)
+                                {*/
+                                    if (Select.value == 0)
+                                    {
+                                        C.material.color = Color.red;
+                                    }
+                                    else if (Select.value == 1)
+                                    {
+                                        C.material.color = Color.green;
+                                    }
+                                    else if (Select.value == 2)
+                                    {
+                                        C.material.color = Color.blue;
+                                    }
+                                    else
+                                    {
+                                        C.material.color = Color.white;
+                                    }
+                                /*}
+                                else
+                                {
+                                    Select.IsExpanded = true;
+                                }*/
+
                                 stop = true;
                                 timer_2 = 0;
                             }
@@ -230,7 +262,7 @@ public class HandTracking : MonoBehaviour
                             timer_1 += Time.deltaTime;
                             if (timer_1 >= 1f)
                             {
-                                click.text = "One Click!";
+                                click.text = "One Click!";  // 한 칸씩 아래로 이동(원하는 item을 가리킬 때까지)
                                 stop = true;
                                 timer_1 = 0;
                             }
@@ -519,6 +551,18 @@ public class HandTracking : MonoBehaviour
             past_data = data;
         }
 #endif
+    }
+
+    private void SetDropdown()
+    {
+        Select.ClearOptions();
+        options.Add("Red");
+        options.Add("Green");
+        options.Add("Blue");
+
+        Select.AddOptions(options);
+        Debug.Log(Select.gameObject);
+        Select.Show();
     }
 
 #if !UNITY_EDITOR
