@@ -70,7 +70,7 @@ public class HandTracking : MonoBehaviour
     // for communication with Arduino
     public double data = 1.0;
 
-    private double tot_len = 1.0;
+    private float tot_len = 1.0f;
 
     public static Vector3 indextip;
     public static Vector3 point_1;
@@ -107,7 +107,7 @@ public class HandTracking : MonoBehaviour
         click = Instantiate(CLK, this.transform);
         C = sphere.GetComponent<Renderer>();
 
-        SetDropdown();
+        //SetDropdown();
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -148,9 +148,9 @@ public class HandTracking : MonoBehaviour
             indexObject4.transform.position = pose.Position;
         }
 
-        point_1 = (indexObject1.transform.position + indexObject2.transform.position) / 2;
-        point_2 = (indexObject2.transform.position + indexObject3.transform.position) / 2;
-        point_3 = (indexObject3.transform.position + indexObject4.transform.position) / 2;
+        point_1 = 0.5f * (indexObject1.transform.position + indexObject2.transform.position);
+        point_2 = 0.5f * (indexObject2.transform.position + indexObject3.transform.position);
+        point_3 = 0.5f * (indexObject3.transform.position + indexObject4.transform.position);
 
         // Calculating Depth data
         if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)    // valid posture
@@ -161,15 +161,15 @@ public class HandTracking : MonoBehaviour
                 tot_len = indexObject1.transform.position.z - indexObject4.transform.position.z;
                 if (point_1.z >= cube.z - 0.1 && (point_1.x >= 0.1 && point_1.x <= 0.3 && point_1.y >= -0.1 && point_1.y <= 0.1)) // 첫째 마디 들어옴
                 {
-                    data = 2 - ((indexObject1.transform.position.z - point_1.z) / tot_len) * 2;  // max_data = 2
+                    data = 2 - ((indexObject1.transform.position.z - point_1.z) * Mathf.Pow(tot_len, -1)) * 2;  // max_data = 2
 
                     if (point_2.z >= cube.z - 0.1 && (point_2.x >= 0.1 && point_2.x <= 0.3 && point_2.y >= -0.1 && point_2.y <= 0.1)) // 둘째 마디 들어옴
                     {
-                        data = 2 - ((indexObject1.transform.position.z - point_2.z) / tot_len) * 2;
+                        data = 2 - ((indexObject1.transform.position.z - point_2.z) * Mathf.Pow(tot_len, -1)) * 2;
 
                         if (point_3.z >= cube.z - 0.1 && (point_3.x >= 0.1 && point_3.x <= 0.3 && point_3.y >= -0.1 && point_3.y <= 0.1)) // 셋째 마디 들어옴
                         {
-                            data = 2 - ((indexObject1.transform.position.z - point_3.z) / tot_len) * 2;
+                            data = 2 - ((indexObject1.transform.position.z - point_3.z) * Mathf.Pow(tot_len, -1)) * 2;
                         }
 
                         if (indexObject4.transform.position.z >= cube.z - 0.1 && (indexObject4.transform.position.x >= 0.1 && indexObject4.transform.position.x <= 0.3 && indexObject4.transform.position.y >= -0.1 && indexObject4.transform.position.y <= 0.1))
@@ -191,10 +191,10 @@ public class HandTracking : MonoBehaviour
 
 
         // for interaction design
-        if (mode == 1)  // ID_1
+        if (mode.Equals(1))  // ID_1
         {
             // Recognizing Click Operation
-            if (stop == false)
+            if (stop.Equals(false))
             {
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
                 {
@@ -218,7 +218,6 @@ public class HandTracking : MonoBehaviour
                         if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
                         {
                             timer_2 += Time.deltaTime;
-                            Select.Show();
                             
                             if (timer_2 >= 1f)
                             {
@@ -226,15 +225,15 @@ public class HandTracking : MonoBehaviour
                                 
                                 /*if (Select.IsExpanded)
                                 {*/
-                                    if (Select.value == 0)
+                                    if (Select.value.Equals(0))
                                     {
                                         C.material.color = Color.red;
                                     }
-                                    else if (Select.value == 1)
+                                    else if (Select.value.Equals(1))
                                     {
                                         C.material.color = Color.green;
                                     }
-                                    else if (Select.value == 2)
+                                    else if (Select.value.Equals(2))
                                     {
                                         C.material.color = Color.blue;
                                     }
@@ -291,9 +290,9 @@ public class HandTracking : MonoBehaviour
             }
 
         }
-        else if (mode == 2) // ID_2
+        else if (mode.Equals(2)) // ID_2
         {
-            if (stop == false)
+            if (stop.Equals(false))
             {
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
                 {
@@ -366,9 +365,9 @@ public class HandTracking : MonoBehaviour
                 PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
             }
         }
-        else if (mode == 3) // ID_3
+        else if (mode.Equals(3)) // ID_3
         {
-            if (stop == false)
+            if (stop.Equals(false))
             {
                 // implement ID_3
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
@@ -392,7 +391,7 @@ public class HandTracking : MonoBehaviour
                         else
                         {
                             Pressed = false;
-                            if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed == true)
+                            if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed.Equals(true))
                             {
                                 click.text = "One Click!";
                                 IsOneClick = false;
@@ -401,7 +400,7 @@ public class HandTracking : MonoBehaviour
                                 timer_2 = 0;
                             }
 
-                            if (point_2.z >= 0.6 && Pressed == false)
+                            if (point_2.z >= 0.6 && Pressed.Equals(false))
                             {
                                 Depressed = false;
                                 IsDoubleClick = false;
@@ -453,7 +452,7 @@ public class HandTracking : MonoBehaviour
         }
         else // mode == 4, ID_4
         {
-            if (stop == false)
+            if (stop.Equals(false))
             {
                 // implement ID_4
                 if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
@@ -477,7 +476,7 @@ public class HandTracking : MonoBehaviour
                         if (point_2.z >= 0.6 && point_3.z <= 0.62 && past_point_2 >= 0.6 && past_point_3 <= 0.62)
                         {
                             timer_3 += Time.deltaTime;
-                            if (pos_2 == -100)
+                            if (pos_2.Equals(-100))
                             {
                                 pos_2 = point_2.x;
                             }
@@ -493,7 +492,7 @@ public class HandTracking : MonoBehaviour
                             {
                                 timer_1 += Time.deltaTime;
 
-                                if (timer_1 >= 1f && timer_3 == 0)
+                                if (timer_1 >= 1f && timer_3.Equals(0))
                                 {
                                     click.text = "One Click!";
                                     stop = true;
@@ -553,7 +552,7 @@ public class HandTracking : MonoBehaviour
 #endif
     }
 
-    private void SetDropdown()
+    /*private void SetDropdown()
     {
         Select.ClearOptions();
         options.Add("Red");
@@ -562,8 +561,7 @@ public class HandTracking : MonoBehaviour
 
         Select.AddOptions(options);
         Debug.Log(Select.gameObject);
-        Select.Show();
-    }
+    }*/
 
 #if !UNITY_EDITOR
     private async void SendDepth()

@@ -18,7 +18,7 @@ public class ProgressFillShader : MonoBehaviour
     void Start()
     {
         objectMaterial = GetComponent<Renderer>().material;
-        progressBorder = GetComponent<MeshFilter>().mesh.bounds.size.z / 2f;
+        progressBorder = GetComponent<MeshFilter>().mesh.bounds.size.z * 0.5f;
         objectMaterial.SetFloat(name: "_ProgressBorder", progressBorder);
     }
     private void Update()
@@ -47,7 +47,8 @@ public class ProgressFillShader : MonoBehaviour
             {
                 c = Color.black;
             }
-            progressBorder = (float)((IndexTip.z - (cube.z - 0.1)) / 0.2 - 0.5);
+            //progressBorder = (float)((IndexTip.z - (cube.z - 0.1)) / 0.2 - 0.5);
+            progressBorder = (float)((IndexTip.z - (cube.z - 0.1)) * 5 - 0.5);
         }
         else
         {
