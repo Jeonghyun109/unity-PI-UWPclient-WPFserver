@@ -33,42 +33,19 @@ using System.Text;
 
 public class HandTracking : MonoBehaviour
 {
-
+    // for VisualizeHand
     public GameObject sphereMarker;
-    public GameObject PIcube;
-    public Dropdown Select;
-    private List<String> options = new List<String>();
-    public GameObject sphere;
-    Renderer C;
-    //Renderer sr;
-    public float timer_1 = 0;
-    public float timer_2 = 0;
-    public float timer_3 = 0;
-    public float timer_stop = 0;
-    Boolean stop = false;
-    float d_click_t = 0.5f;
-    Boolean IsOneClick = false;
-    Boolean IsDoubleClick = false;
-    Boolean Pressed = true;
-    Boolean Depressed = false;
-    double pos_2 = -100;   // for mode 4 deciding whether right-click or not
-
-    public TMP_Text CLK;
-    TMP_Text click;
-    double past_point_1 = 0;
-    double past_point_2 = 0;
-    double past_point_3 = 0;
-
     GameObject indexObject1;
     GameObject indexObject2;
     GameObject indexObject3;
     GameObject indexObject4;
-    public static Vector3 cube;
-
     MixedRealityPose pose;
 
-    // for communication with Arduino
-    public double data = 1.0;
+    // for DepthData
+    public GameObject PIcube;
+    public static Vector3 cube;
+
+    public double data = 1.0;    // for communication with Arduino
 
     private float tot_len = 1.0f;
 
@@ -77,8 +54,9 @@ public class HandTracking : MonoBehaviour
     public static Vector3 point_2;
     public static Vector3 point_3;
 
-    // for various interaction design
-    int mode = 1;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
+    double past_point_1 = 0;
+    double past_point_2 = 0;
+    double past_point_3 = 0;
 
     private string serverIP;
 
@@ -96,7 +74,35 @@ public class HandTracking : MonoBehaviour
 
 #endif
 
-    // Start is called before the first frame update
+    // for interaction design
+    int mode = 1;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
+
+    public Dropdown Select;
+    public GameObject sphere;
+    Renderer C;
+    Boolean IsOpened = false;
+    private int whatItem = -1;   // -1:parent, 0:None, 1:R, 2:G, 3:B
+
+    public float timer_1 = 0;
+    public float timer_2 = 0;
+    public float timer_3 = 0;
+    public float timer_stop = 0;
+    Boolean stop = false;
+
+    public TMP_Text CLK;
+    TMP_Text click;
+
+    // mode #3
+    float d_click_t = 0.5f;
+    Boolean IsOneClick = false;
+    Boolean IsDoubleClick = false;
+    Boolean Pressed = true;
+    Boolean Depressed = false;
+
+    // mode #4
+    double pos_2 = -100;   // for mode 4 deciding whether right-click or not
+
+
     void Start()
     {
         indexObject1 = Instantiate(sphereMarker, this.transform);   // for IndexTip
@@ -116,6 +122,53 @@ public class HandTracking : MonoBehaviour
     }
     // Update is called once per frame
     void Update()
+    {
+        VisualizeHand();
+
+        DepthData();
+
+        // for interaction design
+        if (mode.Equals(1))  // ID_1
+        {
+            ID_1();
+        }
+        else if (mode.Equals(2)) // ID_2
+        {
+            ID_2();
+        }
+        else if (mode.Equals(3)) // ID_3
+        {
+            ID_3();
+        }
+        else // mode == 4, ID_4
+        {
+            ID_4();
+        }
+
+        // update past_points to rememeber the present z postision values of 3 points
+        past_point_1 = point_1.z;
+        past_point_2 = point_2.z;
+        past_point_3 = point_3.z;
+
+#if UNITY_EDITOR
+        // for TCP
+        if (stream != null && stream.CanWrite)
+        {
+            formatter.Serialize(stream, data);  // sending data to Arduino
+        }
+#endif
+
+#if !UNITY_EDITOR
+        // don't send the same depth value considering effectivity
+        if (data != past_data)
+        {
+            SendDepth();    // for TCP connection
+            past_data = data;
+        }
+#endif
+    }
+
+    private void VisualizeHand()
     {
         indexObject1.GetComponent<Renderer>().enabled = false;
         indexObject2.GetComponent<Renderer>().enabled = false;
@@ -147,7 +200,10 @@ public class HandTracking : MonoBehaviour
             indexObject4.GetComponent<Renderer>().enabled = true;
             indexObject4.transform.position = pose.Position;
         }
+    }
 
+    private void DepthData()
+    {
         point_1 = 0.5f * (indexObject1.transform.position + indexObject2.transform.position);
         point_2 = 0.5f * (indexObject2.transform.position + indexObject3.transform.position);
         point_3 = 0.5f * (indexObject3.transform.position + indexObject4.transform.position);
@@ -188,380 +244,415 @@ public class HandTracking : MonoBehaviour
         {
             data = -1;
         }
+    }
 
-
-        // for interaction design
-        if (mode.Equals(1))  // ID_1
+    private void ID_1()
+    {
+        // Recognizing Click Operation
+        if (stop.Equals(false))
         {
-            // Recognizing Click Operation
-            if (stop.Equals(false))
+            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
             {
-                if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
                 {
-                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                    if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                     {
-                        if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
+                        timer_3 += Time.deltaTime;
+                        if (timer_3 >= 1f)
                         {
-                            timer_3 += Time.deltaTime;
-                            if (timer_3 >= 1f)
-                            {
-                                click.text = "Right Click!"; // 한 칸씩 위로 이동
-                                stop = true;
-                                timer_3 = 0;
-                            }
-                        }
-                        else
-                        {
+                            StartCoroutine("RightClick");
+                            stop = true;
                             timer_3 = 0;
                         }
+                    }
+                    else
+                    {
+                        timer_3 = 0;
+                    }
 
-                        if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
-                        {
-                            timer_2 += Time.deltaTime;
-                            
-                            if (timer_2 >= 1f)
-                            {
-                                click.text = "Double Click!";   // 선택(if dropdown close ? open : select item)
-                                
-                                /*if (Select.IsExpanded)
-                                {*/
-                                    if (Select.value.Equals(0))
-                                    {
-                                        C.material.color = Color.red;
-                                    }
-                                    else if (Select.value.Equals(1))
-                                    {
-                                        C.material.color = Color.green;
-                                    }
-                                    else if (Select.value.Equals(2))
-                                    {
-                                        C.material.color = Color.blue;
-                                    }
-                                    else
-                                    {
-                                        C.material.color = Color.white;
-                                    }
-                                /*}
-                                else
-                                {
-                                    Select.IsExpanded = true;
-                                }*/
+                    if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
+                    {
+                        timer_2 += Time.deltaTime;
 
-                                stop = true;
-                                timer_2 = 0;
-                            }
-                        }
-                        else
+                        if (timer_2 >= 1f)
                         {
+                            DoubleClick();
+
+                            stop = true;
                             timer_2 = 0;
                         }
+                    }
+                    else
+                    {
+                        timer_2 = 0;
+                    }
 
-                        if (point_1.z >= 0.6 && point_1.z <= 0.62 && past_point_1 >= 0.6 && past_point_1 <= 0.62)
+                    if (point_1.z >= 0.6 && point_1.z <= 0.62 && past_point_1 >= 0.6 && past_point_1 <= 0.62)
+                    {
+                        timer_1 += Time.deltaTime;
+                        if (timer_1 >= 1f)
                         {
-                            timer_1 += Time.deltaTime;
-                            if (timer_1 >= 1f)
-                            {
-                                click.text = "One Click!";  // 한 칸씩 아래로 이동(원하는 item을 가리킬 때까지)
-                                stop = true;
-                                timer_1 = 0;
-                            }
-                        }
-                        else
-                        {
+                            OneClick();
+                            stop = true;
                             timer_1 = 0;
                         }
                     }
-                }
-            }
-            else
-            {
-                timer_stop += Time.deltaTime;
-
-                if (timer_stop >= 0.5f)
-                {
-                    stop = false;
-
-                    timer_1 = 0;
-                    timer_2 = 0;
-                    timer_3 = 0;
-                    timer_stop = 0;
-                    click.text = "CLK";
-                }
-            }
-
-        }
-        else if (mode.Equals(2)) // ID_2
-        {
-            if (stop.Equals(false))
-            {
-                if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
-                {
-                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                    else
                     {
-                        if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08 && past_point_3 >= cube.z - 0.1 && past_point_3 <= cube.z - 0.08)
-                        {
-                            PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                            timer_3 += Time.deltaTime;
-                            if (timer_3 >= 1f)
-                            {
-                                click.text = "Right Click!";
-                                stop = true;
-                                timer_3 = 0;
-                            }
-                        }
-                        else
-                        {
-                            timer_3 = 0;
-                        }
-
-                        if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
-                        {
-                            PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                            timer_2 += Time.deltaTime;
-                            if (timer_2 >= 1f)
-                            {
-                                click.text = "Double Click!";
-                                stop = true;
-                                timer_2 = 0;
-                            }
-                        }
-                        else
-                        {
-                            timer_2 = 0;
-                        }
-
-                        if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08 && past_point_1 >= cube.z - 0.1 && past_point_1 <= cube.z - 0.08)
-                        {
-                            PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                            timer_1 += Time.deltaTime;
-                            if (timer_1 >= 1f)
-                            {
-                                click.text = "One Click!";
-                                stop = true;
-                                timer_1 = 0;
-                            }
-                        }
-                        else
-                        {
-                            timer_1 = 0;
-                        }
+                        timer_1 = 0;
                     }
                 }
             }
-            else
+        }
+        else
+        {
+            timer_stop += Time.deltaTime;
+
+            if (timer_stop >= 0.5f)
             {
-                timer_stop += Time.deltaTime;
+                stop = false;
 
-                if (timer_stop >= 0.5f)
-                {
-                    stop = false;
-
-                    timer_1 = 0;
-                    timer_2 = 0;
-                    timer_3 = 0;
-                    timer_stop = 0;
-                    click.text = "CLK";
-                }
-                PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
+                timer_1 = 0;
+                timer_2 = 0;
+                timer_3 = 0;
+                timer_stop = 0;
             }
         }
-        else if (mode.Equals(3)) // ID_3
-        {
-            if (stop.Equals(false))
-            {
-                // implement ID_3
-                if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
-                {
-                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
-                    {
-                        if (point_2.z >= 0.6 && past_point_2 >= 0.6)
-                        {
-                            Pressed = true;
-                            Depressed = false;
-                            timer_3 += Time.deltaTime;
+    }
 
-                            if (timer_3 >= 1.5f)
-                            {
-                                click.text = "Right Click!";
-                                stop = true;
-                                timer_3 = 0;
-                                Pressed = false;
-                            }
-                        }
-                        else
+    private void ID_2()
+    {
+        if (stop.Equals(false))
+        {
+            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+            {
+                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                {
+                    if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08 && past_point_3 >= cube.z - 0.1 && past_point_3 <= cube.z - 0.08)
+                    {
+                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
+                        timer_3 += Time.deltaTime;
+                        if (timer_3 >= 1f)
                         {
+                            StartCoroutine("RightClick");
+                            stop = true;
+                            timer_3 = 0;
+                        }
+                    }
+                    else
+                    {
+                        timer_3 = 0;
+                    }
+
+                    if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
+                    {
+                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
+                        timer_2 += Time.deltaTime;
+                        if (timer_2 >= 1f)
+                        {
+                            DoubleClick();
+                            stop = true;
+                            timer_2 = 0;
+                        }
+                    }
+                    else
+                    {
+                        timer_2 = 0;
+                    }
+
+                    if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08 && past_point_1 >= cube.z - 0.1 && past_point_1 <= cube.z - 0.08)
+                    {
+                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
+                        timer_1 += Time.deltaTime;
+                        if (timer_1 >= 1f)
+                        {
+                            OneClick();
+                            stop = true;
+                            timer_1 = 0;
+                        }
+                    }
+                    else
+                    {
+                        timer_1 = 0;
+                    }
+                }
+            }
+        }
+        else
+        {
+            timer_stop += Time.deltaTime;
+
+            if (timer_stop >= 0.5f)
+            {
+                stop = false;
+
+                timer_1 = 0;
+                timer_2 = 0;
+                timer_3 = 0;
+                timer_stop = 0;
+            }
+            PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
+        }
+    }
+
+    private void ID_3()
+    {
+        if (stop.Equals(false))
+        {
+            // implement ID_3
+            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+            {
+                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                {
+                    if (point_2.z >= 0.6 && past_point_2 >= 0.6)
+                    {
+                        Pressed = true;
+                        Depressed = false;
+                        timer_3 += Time.deltaTime;
+
+                        if (timer_3 >= 1.5f)
+                        {
+                            StartCoroutine("RightClick");
+                            stop = true;
+                            timer_3 = 0;
                             Pressed = false;
-                            if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed.Equals(true))
+                        }
+                    }
+                    else
+                    {
+                        Pressed = false;
+                        if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed.Equals(true))
+                        {
+                            OneClick();
+                            IsOneClick = false;
+                            Pressed = true;
+                            stop = true;
+                            timer_2 = 0;
+                        }
+
+                        if (point_2.z >= 0.6 && Pressed.Equals(false))
+                        {
+                            Depressed = false;
+                            IsDoubleClick = false;
+                            if (!IsOneClick)
                             {
-                                click.text = "One Click!";
+                                timer_2 = Time.time;
+                                IsOneClick = true;
+                            }
+
+                            else if (IsOneClick && ((Time.time - timer_2) < d_click_t))
+                            {
+                                IsDoubleClick = true;
+                            }
+                        }
+                        else if (point_2.z < 0.6)
+                        {
+                            Depressed = true;
+
+                            if (IsDoubleClick)
+                            {
+                                DoubleClick();
                                 IsOneClick = false;
+                                IsDoubleClick = false;
                                 Pressed = true;
                                 stop = true;
                                 timer_2 = 0;
                             }
-
-                            if (point_2.z >= 0.6 && Pressed.Equals(false))
-                            {
-                                Depressed = false;
-                                IsDoubleClick = false;
-                                if (!IsOneClick)
-                                {
-                                    timer_2 = Time.time;
-                                    IsOneClick = true;
-                                }
-
-                                else if (IsOneClick && ((Time.time - timer_2) < d_click_t))
-                                {
-                                    IsDoubleClick = true;
-                                }
-                            }
-                            else if (point_2.z < 0.6)
-                            {
-                                Depressed = true;
-
-                                if (IsDoubleClick)
-                                {
-                                    click.text = "Double Click!";
-                                    IsOneClick = false;
-                                    IsDoubleClick = false;
-                                    Pressed = true;
-                                    stop = true;
-                                    timer_2 = 0;
-                                }
-                            }
                         }
                     }
                 }
             }
-            else
-            {
-                timer_stop += Time.deltaTime;
+        }
+        else
+        {
+            timer_stop += Time.deltaTime;
 
-                if (timer_stop >= 0.5f)
-                {
-                    stop = false;
-                    timer_2 = 0;
-                    timer_3 = 0;
-                    timer_stop = 0;
-                    click.text = "CLK";
-                    Pressed = true;
-                    Depressed = true;
-                    IsOneClick = false;
-                }
+            if (timer_stop >= 0.5f)
+            {
+                stop = false;
+                timer_2 = 0;
+                timer_3 = 0;
+                timer_stop = 0;
+                Pressed = true;
+                Depressed = true;
+                IsOneClick = false;
             }
         }
-        else // mode == 4, ID_4
+    }
+
+    private void ID_4()
+    {
+        if (stop.Equals(false))
         {
-            if (stop.Equals(false))
+            // implement ID_4
+            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
             {
-                // implement ID_4
-                if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
                 {
-                    if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                    if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                     {
-                        if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
+                        timer_2 += Time.deltaTime;
+                        if (timer_2 >= 1f)
                         {
-                            timer_2 += Time.deltaTime;
-                            if (timer_2 >= 1f)
-                            {
-                                click.text = "Double Click!";
-                                stop = true;
-                                timer_2 = 0;
-                            }
-                        }
-                        else
-                        {
+                            DoubleClick();
+                            stop = true;
                             timer_2 = 0;
                         }
-                        if (point_2.z >= 0.6 && point_3.z <= 0.62 && past_point_2 >= 0.6 && past_point_3 <= 0.62)
+                    }
+                    else
+                    {
+                        timer_2 = 0;
+                    }
+                    if (point_2.z >= 0.6 && point_3.z <= 0.62 && past_point_2 >= 0.6 && past_point_3 <= 0.62)
+                    {
+                        timer_3 += Time.deltaTime;
+                        if (pos_2.Equals(-100))
                         {
-                            timer_3 += Time.deltaTime;
-                            if (pos_2.Equals(-100))
+                            pos_2 = point_2.x;
+                        }
+                        if (timer_3 >= 1f && (point_2.x - pos_2) >= 0.1)
+                        {
+                            StartCoroutine("RightClick");
+                            stop = true;
+                            timer_3 = 0;
+                            pos_2 = -100;
+                        }
+
+                        if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
+                        {
+                            timer_1 += Time.deltaTime;
+
+                            if (timer_1 >= 1f && timer_3.Equals(0))
                             {
-                                pos_2 = point_2.x;
-                            }
-                            if (timer_3 >= 1f && (point_2.x - pos_2) >= 0.1)
-                            {
-                                click.text = "Right Click!";
+                                OneClick();
                                 stop = true;
-                                timer_3 = 0;
-                                pos_2 = -100;
-                            }
-
-                            if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
-                            {
-                                timer_1 += Time.deltaTime;
-
-                                if (timer_1 >= 1f && timer_3.Equals(0))
-                                {
-                                    click.text = "One Click!";
-                                    stop = true;
-                                    timer_1 = 0;
-                                }
-                            }
-                            else
-                            {
                                 timer_1 = 0;
                             }
                         }
                         else
                         {
                             timer_1 = 0;
-                            timer_3 = 0;
-                            pos_2 = -100;
                         }
+                    }
+                    else
+                    {
+                        timer_1 = 0;
+                        timer_3 = 0;
+                        pos_2 = -100;
                     }
                 }
             }
-            else
+        }
+        else
+        {
+            timer_stop += Time.deltaTime;
+
+            if (timer_stop >= 0.5f)
             {
-                timer_stop += Time.deltaTime;
+                stop = false;
 
-                if (timer_stop >= 0.5f)
-                {
-                    stop = false;
-
-                    timer_1 = 0;
-                    timer_2 = 0;
-                    timer_stop = 0;
-                    click.text = "CLK";
-                }
+                timer_1 = 0;
+                timer_2 = 0;
+                timer_stop = 0;
             }
         }
-
-        // update past_points to rememeber the present z postision values of 3 points
-        past_point_1 = point_1.z;
-        past_point_2 = point_2.z;
-        past_point_3 = point_3.z;
-
-#if UNITY_EDITOR
-        // for TCP
-        if (stream != null && stream.CanWrite)
-        {
-            formatter.Serialize(stream, data);  // sending data to Arduino
-        }
-#endif
-
-#if !UNITY_EDITOR
-        // don't send the same depth value considering effectivity
-        if (data != past_data)
-        {
-            SendDepth();    // for TCP connection
-            past_data = data;
-        }
-#endif
     }
 
-    /*private void SetDropdown()
+    private void OneClick()
     {
-        Select.ClearOptions();
-        options.Add("Red");
-        options.Add("Green");
-        options.Add("Blue");
+        if (IsOpened.Equals(true))
+        {
+            click.text = "One Click!";
 
-        Select.AddOptions(options);
-        Debug.Log(Select.gameObject);
-    }*/
+            whatItem = (whatItem + 1) % 4;
+            //Select.FindSelectable(whatItem);
+        }
+    }
+
+    private void DoubleClick()
+    {
+        click.text = "Double Click!";
+
+        if (!IsOpened && whatItem.Equals(-1))
+        {
+            IsOpened = true;
+            Select.Show();
+        }
+        else if (IsOpened && whatItem.Equals(-1))
+        {
+            IsOpened = false;
+            Select.Hide();
+        }
+        else
+        {
+            Select.value = whatItem;
+            whatItem = -1;
+            if (Select.value.Equals(1))
+            {
+                C.material.color = Color.red;
+            }
+            else if (Select.value.Equals(2))
+            {
+                C.material.color = Color.green;
+            }
+            else if (Select.value.Equals(3))
+            {
+                C.material.color = Color.blue;
+            }
+            else
+            {
+                C.material.color = Color.white;
+            }
+        }
+    }
+
+    IEnumerator RightClick()
+    {
+        click.text = "Enter mode (1~4)";
+        
+        while (Input.inputString.Equals(""))
+        {
+            yield return new WaitForSeconds(0.02f);
+        }
+        switch (Input.inputString)
+        {
+            case "1":
+                mode = 1;
+                click.text = "mode 1";
+                Select.Hide();
+                Select.value = 0;
+                whatItem = -1;
+                IsOpened = false;
+                break;
+
+            case "2":
+                click.text = "mode 2";
+                mode = 2;
+                Select.Hide();
+                Select.value = 0;
+                whatItem = -1;
+                IsOpened = false;
+                break;
+
+            case "3":
+                click.text = "mode 3";
+                mode = 3;
+                Select.Hide();
+                Select.value = 0;
+                whatItem = -1;
+                IsOpened = false;
+                break;
+            case "4":
+                click.text = "mode 4";
+                mode = 4;
+                Select.Hide();
+                Select.value = 0;
+                whatItem = -1;
+                IsOpened = false;
+                break;
+        }
+        Debug.Log(Input.inputString);
+    }
 
 #if !UNITY_EDITOR
     private async void SendDepth()
