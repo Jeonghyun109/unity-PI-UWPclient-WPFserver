@@ -71,7 +71,6 @@ public class HandTracking : MonoBehaviour
     private double past_data = 0;
     private Windows.Networking.Sockets.StreamSocket socket;
     private StreamSocketListener listener;
-
 #endif
 
     // for interaction design
@@ -82,6 +81,7 @@ public class HandTracking : MonoBehaviour
     Renderer C;
     Boolean IsOpened = false;
     private int whatItem = -1;   // -1:parent, 0:None, 1:R, 2:G, 3:B
+    public Toggle item;
 
     public float timer_1 = 0;
     public float timer_2 = 0;
@@ -113,14 +113,13 @@ public class HandTracking : MonoBehaviour
         click = Instantiate(CLK, this.transform);
         C = sphere.GetComponent<Renderer>();
 
-        //SetDropdown();
-
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
         Task.Factory.StartNew(ListenBackground);
 #endif
     }
-    // Update is called once per frame
+
+
     void Update()
     {
         VisualizeHand();
@@ -128,19 +127,19 @@ public class HandTracking : MonoBehaviour
         DepthData();
 
         // for interaction design
-        if (mode.Equals(1))  // ID_1
+        if (mode.Equals(1))
         {
             ID_1();
         }
-        else if (mode.Equals(2)) // ID_2
+        else if (mode.Equals(2))
         {
             ID_2();
         }
-        else if (mode.Equals(3)) // ID_3
+        else if (mode.Equals(3))
         {
             ID_3();
         }
-        else // mode == 4, ID_4
+        else
         {
             ID_4();
         }
@@ -208,7 +207,6 @@ public class HandTracking : MonoBehaviour
         point_2 = 0.5f * (indexObject2.transform.position + indexObject3.transform.position);
         point_3 = 0.5f * (indexObject3.transform.position + indexObject4.transform.position);
 
-        // Calculating Depth data
         if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)    // valid posture
         {
             if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)) // ¼Õ³¡ µé¾î¿È
@@ -565,13 +563,24 @@ public class HandTracking : MonoBehaviour
             click.text = "One Click!";
 
             whatItem = (whatItem + 1) % 4;
-            //Select.FindSelectable(whatItem);
+
+            for (int i = 0; i < Select.options.Count; i++)
+            {
+                if (i.Equals(whatItem))
+                {
+                    // I have to do on Saturday OMG ...
+                }
+                else
+                {
+
+                }
+            }
         }
     }
 
     private void DoubleClick()
     {
-        click.text = "Double Click!";
+        //click.text = "Double Click!";
 
         if (!IsOpened && whatItem.Equals(-1))
         {
@@ -623,6 +632,7 @@ public class HandTracking : MonoBehaviour
                 Select.value = 0;
                 whatItem = -1;
                 IsOpened = false;
+                C.material.color = Color.white;
                 break;
 
             case "2":
@@ -632,6 +642,7 @@ public class HandTracking : MonoBehaviour
                 Select.value = 0;
                 whatItem = -1;
                 IsOpened = false;
+                C.material.color = Color.white;
                 break;
 
             case "3":
@@ -641,6 +652,7 @@ public class HandTracking : MonoBehaviour
                 Select.value = 0;
                 whatItem = -1;
                 IsOpened = false;
+                C.material.color = Color.white;
                 break;
             case "4":
                 click.text = "mode 4";
@@ -649,6 +661,7 @@ public class HandTracking : MonoBehaviour
                 Select.value = 0;
                 whatItem = -1;
                 IsOpened = false;
+                C.material.color = Color.white;
                 break;
         }
         Debug.Log(Input.inputString);
