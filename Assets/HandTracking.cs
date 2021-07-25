@@ -558,31 +558,54 @@ public class HandTracking : MonoBehaviour
 
     private void OneClick()
     {
-        if (IsOpened.Equals(true))
-        {
-            click.text = "One Click!";
+        /*if (IsOpened.Equals(true))
+        {*/
+            //click.text = "One Click!";
 
+            if (whatItem.Equals(-1))
+            {
+                whatItem += 1;
+            }
             whatItem = (whatItem + 1) % 4;
+        if (whatItem.Equals(0))
+        {
+            whatItem += 1;
+        }
 
-            for (int i = 0; i < Select.options.Count; i++)
+            Select.value = whatItem;
+           // Select.Select();
+            /*for (int i = 0; i < Select.options.Count; i++)
             {
                 if (i.Equals(whatItem))
                 {
-                    // I have to do on Saturday OMG ...
+                    
+                    var texture = new Texture2D(1, 1); // creating texture with 1 pixel
+                    texture.SetPixel(0, 0, Color.gray); // setting to this pixel some color
+                    texture.Apply(); //applying texture. necessarily
+
+                    Select.options[i].sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0));
+
+                    Debug.Log(i);
+                    Select.Select();
                 }
                 else
                 {
+                    var texture = new Texture2D(1, 1); // creating texture with 1 pixel
+                    texture.SetPixel(0, 0, Color.white); // setting to this pixel some color
+                    texture.Apply(); //applying texture. necessarily
 
+                    Select.options[i].image = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0));
                 }
-            }
-        }
+            }*/
+            //Select.RefreshShownValue();
+        //}
     }
 
     private void DoubleClick()
     {
         //click.text = "Double Click!";
 
-        if (!IsOpened && whatItem.Equals(-1))
+        /*if (!IsOpened && whatItem.Equals(-1))
         {
             IsOpened = true;
             Select.Show();
@@ -594,8 +617,8 @@ public class HandTracking : MonoBehaviour
         }
         else
         {
-            Select.value = whatItem;
-            whatItem = -1;
+            Select.value = whatItem;*/
+            //whatItem = -1;
             if (Select.value.Equals(1))
             {
                 C.material.color = Color.red;
@@ -612,7 +635,7 @@ public class HandTracking : MonoBehaviour
             {
                 C.material.color = Color.white;
             }
-        }
+        //}
     }
 
     IEnumerator RightClick()
