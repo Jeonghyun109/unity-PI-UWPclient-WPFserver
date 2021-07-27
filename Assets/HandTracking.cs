@@ -29,8 +29,6 @@ using System.Text;
 #endif
 
 
-//using Windows.Networking.Sockets;
-
 public class HandTracking : MonoBehaviour
 {
     // for VisualizeHand
@@ -74,7 +72,12 @@ public class HandTracking : MonoBehaviour
 #endif
 
     // for interaction design
+
     int mode = 1;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
+    public Button Mode_1;
+    public Button Mode_2;
+    public Button Mode_3;
+    public Button Mode_4;
 
     public GameObject sphere_1;
     public GameObject sphere_2;
@@ -83,21 +86,14 @@ public class HandTracking : MonoBehaviour
     Renderer C_2;
     Renderer C_3;
 
-    public Button Mode_1;
-    public Button Mode_2;
-    public Button Mode_3;
-    public Button Mode_4;
-    
-    Boolean IsOpened = false;
+    double peak_tip = 0.6;
+    int peak_z = 0; // 0: out of range, 1: operation_1, 2: operation_2, 3: operation_3
 
     public float timer_1 = 0;
     public float timer_2 = 0;
     public float timer_3 = 0;
     public float timer_stop = 0;
     Boolean stop = false;
-
-    public TMP_Text CLK;
-    TMP_Text click;
 
     // mode #3
     float d_click_t = 0.5f;
@@ -117,7 +113,6 @@ public class HandTracking : MonoBehaviour
         indexObject3 = Instantiate(sphereMarker, this.transform);   // for IndexMiddleJoint
         indexObject4 = Instantiate(sphereMarker, this.transform);   // for IndexKnuckle
 
-        click = Instantiate(CLK, this.transform);
         C_1 = sphere_1.GetComponent<Renderer>();
         C_2 = sphere_2.GetComponent<Renderer>();
         C_3 = sphere_3.GetComponent<Renderer>();
@@ -138,7 +133,6 @@ public class HandTracking : MonoBehaviour
 
         DepthData();
 
-        // for interaction design
         if (mode.Equals(1))
         {
             ID_1();
@@ -258,150 +252,117 @@ public class HandTracking : MonoBehaviour
 
     private void ID_1()
     {
-        // Recognizing Click Operation
-        if (stop.Equals(false))
+        if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
         {
-            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+            if (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)
             {
-                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                if (peak_tip < indexObject1.transform.position.z)
                 {
-                    if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
-                    {
-                        timer_3 += Time.deltaTime;
-                        if (timer_3 >= 1f)
-                        {
-                            Operate_3();
-                            stop = true;
-                            timer_3 = 0;
-                        }
-                    }
-                    else
-                    {
-                        timer_3 = 0;
-                    }
+                    peak_tip = indexObject1.transform.position.z;
 
-                    if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
+                    if (point_3.z > 0.62)
                     {
-                        timer_2 += Time.deltaTime;
-
-                        if (timer_2 >= 1f)
-                        {
-                            Operate_2();
-
-                            stop = true;
-                            timer_2 = 0;
-                        }
+                        peak_z = 0;
                     }
-                    else
+                    else if (point_3.z >= 0.6 && point_3.z <= 0.62)
                     {
-                        timer_2 = 0;
+                        peak_z = 3;
                     }
-
-                    if (point_1.z >= 0.6 && point_1.z <= 0.62 && past_point_1 >= 0.6 && past_point_1 <= 0.62)
+                    else if (point_2.z >= 0.6 && point_2.z <= 0.62)
                     {
-                        timer_1 += Time.deltaTime;
-                        if (timer_1 >= 1f)
-                        {
-                            Operate_1();
-                            stop = true;
-                            timer_1 = 0;
-                        }
+                        peak_z = 2;
                     }
-                    else
+                    else if (point_1.z >= 0.6 && point_1.z <= 0.62)
                     {
-                        timer_1 = 0;
+                        peak_z = 1;
                     }
                 }
-            }
-        }
-        else
-        {
-            timer_stop += Time.deltaTime;
 
-            if (timer_stop >= 0.5f)
-            {
-                stop = false;
-
-                timer_1 = 0;
-                timer_2 = 0;
-                timer_3 = 0;
-                timer_stop = 0;
+                if (peak_tip != 0.6 && indexObject1.transform.position.z < 0.6 && peak_z != 0)
+                {
+                    Debug.Log(peak_z);
+                    switch (peak_z)
+                    {
+                        case 1:
+                            Operate_1();
+                            peak_tip = 0.6;
+                            peak_z = 0;
+                            break;
+                        case 2:
+                            Operate_2();
+                            peak_tip = 0.6;
+                            peak_z = 0;
+                            break;
+                        case 3:
+                            Operate_3();
+                            peak_tip = 0.6;
+                            peak_z = 0;
+                            break;
+                    }
+                }
             }
         }
     }
 
     private void ID_2()
     {
-        if (stop.Equals(false))
+        if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
         {
-            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+            if (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)
             {
-                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                if (indexObject1.transform.position.z >= cube.z - 0.1)
                 {
-                    if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08 && past_point_3 >= cube.z - 0.1 && past_point_3 <= cube.z - 0.08)
-                    {
-                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                        timer_3 += Time.deltaTime;
-                        if (timer_3 >= 1f)
-                        {
-                            Operate_3();
-                            stop = true;
-                            timer_3 = 0;
-                        }
-                    }
-                    else
-                    {
-                        timer_3 = 0;
-                    }
+                    PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);    // Cube is moving backward
+                }
 
-                    if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08 && past_point_2 >= cube.z - 0.1 && past_point_2 <= cube.z - 0.08)
-                    {
-                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                        timer_2 += Time.deltaTime;
-                        if (timer_2 >= 1f)
-                        {
-                            Operate_2();
-                            stop = true;
-                            timer_2 = 0;
-                        }
-                    }
-                    else
-                    {
-                        timer_2 = 0;
-                    }
+                if (peak_tip < indexObject1.transform.position.z)
+                {
+                    peak_tip = indexObject1.transform.position.z;
 
-                    if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08 && past_point_1 >= cube.z - 0.1 && past_point_1 <= cube.z - 0.08)
+                    if (point_3.z > cube.z - 0.08)
                     {
-                        PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);
-                        timer_1 += Time.deltaTime;
-                        if (timer_1 >= 1f)
-                        {
-                            Operate_1();
-                            stop = true;
-                            timer_1 = 0;
-                        }
+                        peak_z = 0;
                     }
-                    else
+                    else if (point_3.z >= cube.z - 0.1 && point_3.z <= cube.z - 0.08)
                     {
-                        timer_1 = 0;
+                        peak_z = 3;
+                    }
+                    else if (point_2.z >= cube.z - 0.1 && point_2.z <= cube.z - 0.08)
+                    {
+                        peak_z = 2;
+                    }
+                    else if (point_1.z >= cube.z - 0.1 && point_1.z <= cube.z - 0.08)
+                    {
+                        peak_z = 1;
                     }
                 }
-            }
-        }
-        else
-        {
-            timer_stop += Time.deltaTime;
 
-            if (timer_stop >= 0.5f)
-            {
-                stop = false;
+                if (peak_tip != 0.6 && indexObject1.transform.position.z < 0.6 && peak_z != 0)
+                {
+                    Debug.Log(peak_z);
 
-                timer_1 = 0;
-                timer_2 = 0;
-                timer_3 = 0;
-                timer_stop = 0;
+                    switch (peak_z)
+                    {
+                        case 1:
+                            Operate_1();
+                            peak_tip = 0.6;
+                            peak_z = 0;
+                            break;
+                        case 2:
+                            Operate_2();
+                            peak_tip = 0.6;
+                            peak_z = 0;
+                            break;
+                        case 3:
+                            Operate_3();
+                            peak_tip = 0.6;
+                            peak_z = 0;
+                            break;
+                    }
+
+                    PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
+                }
             }
-            PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
         }
     }
 
@@ -409,7 +370,6 @@ public class HandTracking : MonoBehaviour
     {
         if (stop.Equals(false))
         {
-            // implement ID_3
             if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
             {
                 if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
@@ -494,7 +454,6 @@ public class HandTracking : MonoBehaviour
     {
         if (stop.Equals(false))
         {
-            // implement ID_4
             if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
             {
                 if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
@@ -593,59 +552,10 @@ public class HandTracking : MonoBehaviour
     public void ChangeMode (int m)
     {
         mode = m;
+        C_1.material.color = Color.white;
+        C_2.material.color = Color.white;
+        C_3.material.color = Color.white;
     }
-    /*
-        private void ChangeMode()
-        {
-            ID_whatItem = mode;
-
-            if (ID_whatItem.Equals(-1))
-            {
-                ID_whatItem += 1;
-            }
-            ID_whatItem = (ID_whatItem + 1) % 5;
-
-            if (ID_whatItem.Equals(0))
-            {
-                ID_whatItem += 1;
-            }
-
-            ID.value = ID_whatItem;
-
-            click.text = "Change mode";
-            if (ID.value.Equals(1))
-            {
-                click.text = "mode 1";
-                Select.value = 0;
-                whatItem = -1;
-                C.material.color = Color.white;
-                mode = 1;
-            }
-            else if (ID.value.Equals(2))
-            {
-                click.text = "mode 2";
-                Select.value = 0;
-                whatItem = -1;
-                C.material.color = Color.white;
-                mode = 2;
-            }
-            else if (ID.value.Equals(3))
-            {
-                click.text = "mode 3";
-                Select.value = 0;
-                whatItem = -1;
-                C.material.color = Color.white;
-                mode = 3;
-            }
-            else if (ID.value.Equals(4))
-            {
-                click.text = "mode 4";
-                Select.value = 0;
-                whatItem = -1;
-                C.material.color = Color.white;
-                mode = 4;
-            }
-        }*/
 
 #if !UNITY_EDITOR
     private async void SendDepth()
