@@ -76,14 +76,19 @@ public class HandTracking : MonoBehaviour
     // for interaction design
     int mode = 1;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
 
-    public Dropdown Select;
-    public GameObject sphere;
-    Renderer C;
-    Boolean IsOpened = false;
-    private int whatItem = -1;   // -1:parent, 0:None, 1:R, 2:G, 3:B
+    public GameObject sphere_1;
+    public GameObject sphere_2;
+    public GameObject sphere_3;
+    Renderer C_1;
+    Renderer C_2;
+    Renderer C_3;
 
-    public Dropdown ID;
-    private int ID_whatItem = -1;
+    public Button Mode_1;
+    public Button Mode_2;
+    public Button Mode_3;
+    public Button Mode_4;
+    
+    Boolean IsOpened = false;
 
     public float timer_1 = 0;
     public float timer_2 = 0;
@@ -113,7 +118,12 @@ public class HandTracking : MonoBehaviour
         indexObject4 = Instantiate(sphereMarker, this.transform);   // for IndexKnuckle
 
         click = Instantiate(CLK, this.transform);
-        C = sphere.GetComponent<Renderer>();
+        C_1 = sphere_1.GetComponent<Renderer>();
+        C_2 = sphere_2.GetComponent<Renderer>();
+        C_3 = sphere_3.GetComponent<Renderer>();
+        C_1.material.color = Color.white;
+        C_2.material.color = Color.white;
+        C_3.material.color = Color.white;
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -260,7 +270,7 @@ public class HandTracking : MonoBehaviour
                         timer_3 += Time.deltaTime;
                         if (timer_3 >= 1f)
                         {
-                            RightClick();
+                            Operate_3();
                             stop = true;
                             timer_3 = 0;
                         }
@@ -276,7 +286,7 @@ public class HandTracking : MonoBehaviour
 
                         if (timer_2 >= 1f)
                         {
-                            DoubleClick();
+                            Operate_2();
 
                             stop = true;
                             timer_2 = 0;
@@ -292,7 +302,7 @@ public class HandTracking : MonoBehaviour
                         timer_1 += Time.deltaTime;
                         if (timer_1 >= 1f)
                         {
-                            OneClick();
+                            Operate_1();
                             stop = true;
                             timer_1 = 0;
                         }
@@ -334,7 +344,7 @@ public class HandTracking : MonoBehaviour
                         timer_3 += Time.deltaTime;
                         if (timer_3 >= 1f)
                         {
-                            RightClick();
+                            Operate_3();
                             stop = true;
                             timer_3 = 0;
                         }
@@ -350,7 +360,7 @@ public class HandTracking : MonoBehaviour
                         timer_2 += Time.deltaTime;
                         if (timer_2 >= 1f)
                         {
-                            DoubleClick();
+                            Operate_2();
                             stop = true;
                             timer_2 = 0;
                         }
@@ -366,7 +376,7 @@ public class HandTracking : MonoBehaviour
                         timer_1 += Time.deltaTime;
                         if (timer_1 >= 1f)
                         {
-                            OneClick();
+                            Operate_1();
                             stop = true;
                             timer_1 = 0;
                         }
@@ -412,7 +422,7 @@ public class HandTracking : MonoBehaviour
 
                         if (timer_3 >= 1.5f)
                         {
-                            RightClick();
+                            Operate_3();
                             stop = true;
                             timer_3 = 0;
                             Pressed = false;
@@ -423,7 +433,7 @@ public class HandTracking : MonoBehaviour
                         Pressed = false;
                         if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed.Equals(true))
                         {
-                            OneClick();
+                            Operate_1();
                             IsOneClick = false;
                             Pressed = true;
                             stop = true;
@@ -451,7 +461,7 @@ public class HandTracking : MonoBehaviour
 
                             if (IsDoubleClick)
                             {
-                                DoubleClick();
+                                Operate_2();
                                 IsOneClick = false;
                                 IsDoubleClick = false;
                                 Pressed = true;
@@ -494,7 +504,7 @@ public class HandTracking : MonoBehaviour
                         timer_2 += Time.deltaTime;
                         if (timer_2 >= 1f)
                         {
-                            DoubleClick();
+                            Operate_2();
                             stop = true;
                             timer_2 = 0;
                         }
@@ -512,7 +522,7 @@ public class HandTracking : MonoBehaviour
                         }
                         if (timer_3 >= 1f && (point_2.x - pos_2) >= 0.1)
                         {
-                            RightClick();
+                            Operate_3();
                             stop = true;
                             timer_3 = 0;
                             pos_2 = -100;
@@ -524,7 +534,7 @@ public class HandTracking : MonoBehaviour
 
                             if (timer_1 >= 1f && timer_3.Equals(0))
                             {
-                                OneClick();
+                                Operate_1();
                                 stop = true;
                                 timer_1 = 0;
                             }
@@ -559,139 +569,83 @@ public class HandTracking : MonoBehaviour
         }
     }
 
-    private void OneClick()
+    private void Operate_1 ()
     {
-        /*if (IsOpened.Equals(true))
-        {*/
-        //click.text = "One Click!";
+        C_1.material.color = Color.green;
+        C_2.material.color = Color.white;
+        C_3.material.color = Color.white;
+    }
 
-        if (whatItem.Equals(-1))
-        {
-            whatItem += 1;
-        }
-        whatItem = (whatItem + 1) % 4;
-        if (whatItem.Equals(0))
-        {
-            whatItem += 1;
-        }
+    private void Operate_2 ()
+    {
+        C_2.material.color = Color.green;
+        C_1.material.color = Color.white;
+        C_3.material.color = Color.white;
+    }
 
-        Select.value = whatItem;
-        // Select.Select();
-        /*for (int i = 0; i < Select.options.Count; i++)
+    private void Operate_3 ()
+    {
+        C_3.material.color = Color.green;
+        C_1.material.color = Color.white;
+        C_2.material.color = Color.white;
+    }
+
+    public void ChangeMode (int m)
+    {
+        mode = m;
+    }
+    /*
+        private void ChangeMode()
         {
-            if (i.Equals(whatItem))
+            ID_whatItem = mode;
+
+            if (ID_whatItem.Equals(-1))
             {
-
-                var texture = new Texture2D(1, 1); // creating texture with 1 pixel
-                texture.SetPixel(0, 0, Color.gray); // setting to this pixel some color
-                texture.Apply(); //applying texture. necessarily
-
-                Select.options[i].sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0));
-
-                Debug.Log(i);
-                Select.Select();
+                ID_whatItem += 1;
             }
-            else
-            {
-                var texture = new Texture2D(1, 1); // creating texture with 1 pixel
-                texture.SetPixel(0, 0, Color.white); // setting to this pixel some color
-                texture.Apply(); //applying texture. necessarily
+            ID_whatItem = (ID_whatItem + 1) % 5;
 
-                Select.options[i].image = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0));
+            if (ID_whatItem.Equals(0))
+            {
+                ID_whatItem += 1;
+            }
+
+            ID.value = ID_whatItem;
+
+            click.text = "Change mode";
+            if (ID.value.Equals(1))
+            {
+                click.text = "mode 1";
+                Select.value = 0;
+                whatItem = -1;
+                C.material.color = Color.white;
+                mode = 1;
+            }
+            else if (ID.value.Equals(2))
+            {
+                click.text = "mode 2";
+                Select.value = 0;
+                whatItem = -1;
+                C.material.color = Color.white;
+                mode = 2;
+            }
+            else if (ID.value.Equals(3))
+            {
+                click.text = "mode 3";
+                Select.value = 0;
+                whatItem = -1;
+                C.material.color = Color.white;
+                mode = 3;
+            }
+            else if (ID.value.Equals(4))
+            {
+                click.text = "mode 4";
+                Select.value = 0;
+                whatItem = -1;
+                C.material.color = Color.white;
+                mode = 4;
             }
         }*/
-        //Select.RefreshShownValue();
-        //}
-    }
-
-    private void DoubleClick()
-    {
-        //click.text = "Double Click!";
-
-        /*if (!IsOpened && whatItem.Equals(-1))
-        {
-            IsOpened = true;
-            Select.Show();
-        }
-        else if (IsOpened && whatItem.Equals(-1))
-        {
-            IsOpened = false;
-            Select.Hide();
-        }
-        else
-        {
-            Select.value = whatItem;*/
-        //whatItem = -1;
-        if (Select.value.Equals(1))
-        {
-            C.material.color = Color.red;
-        }
-        else if (Select.value.Equals(2))
-        {
-            C.material.color = Color.green;
-        }
-        else if (Select.value.Equals(3))
-        {
-            C.material.color = Color.blue;
-        }
-        else
-        {
-            C.material.color = Color.white;
-        }
-        //}
-    }
-
-    private void RightClick()
-    {
-        ID_whatItem = mode;
-
-        if (ID_whatItem.Equals(-1))
-        {
-            ID_whatItem += 1;
-        }
-        ID_whatItem = (ID_whatItem + 1) % 5;
-
-        if (ID_whatItem.Equals(0))
-        {
-            ID_whatItem += 1;
-        }
-
-        ID.value = ID_whatItem;
-
-        click.text = "Change mode";
-        if (ID.value.Equals(1))
-        {
-            click.text = "mode 1";
-            Select.value = 0;
-            whatItem = -1;
-            C.material.color = Color.white;
-            mode = 1;
-        }
-        else if (ID.value.Equals(2))
-        {
-            click.text = "mode 2";
-            Select.value = 0;
-            whatItem = -1;
-            C.material.color = Color.white;
-            mode = 2;
-        }
-        else if (ID.value.Equals(3))
-        {
-            click.text = "mode 3";
-            Select.value = 0;
-            whatItem = -1;
-            C.material.color = Color.white;
-            mode = 3;
-        }
-        else if (ID.value.Equals(4))
-        {
-            click.text = "mode 4";
-            Select.value = 0;
-            whatItem = -1;
-            C.material.color = Color.white;
-            mode = 4;
-        }
-    }
 
 #if !UNITY_EDITOR
     private async void SendDepth()
