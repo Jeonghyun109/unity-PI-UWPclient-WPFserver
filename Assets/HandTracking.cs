@@ -49,6 +49,9 @@ public class HandTracking : MonoBehaviour
     private float tot_len = 1.0f;
 
     public static Vector3 indextip;
+    Vector3 indexdistal;
+    Vector3 indexmiddle;
+    Vector3 indexknuckle;
     public static Vector3 point_1;
     public static Vector3 point_2;
     public static Vector3 point_3;
@@ -192,51 +195,55 @@ public class HandTracking : MonoBehaviour
         {
             indexObject2.GetComponent<Renderer>().enabled = true;
             indexObject2.transform.position = pose.Position;
+            indexdistal = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexMiddleJoint, Handedness.Right, out pose))
         {
             indexObject3.GetComponent<Renderer>().enabled = true;
             indexObject3.transform.position = pose.Position;
+            indexmiddle = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexKnuckle, Handedness.Right, out pose))
         {
             indexObject4.GetComponent<Renderer>().enabled = true;
             indexObject4.transform.position = pose.Position;
+            indexknuckle = pose.Position;
         }
     }
 
     private void DepthData()
     {
-        point_1 = 0.5f * (indexObject1.transform.position + indexObject2.transform.position);
-        point_2 = 0.5f * (indexObject2.transform.position + indexObject3.transform.position);
-        point_3 = 0.5f * (indexObject3.transform.position + indexObject4.transform.position);
+        point_1 = 0.5f * (indextip + indexdistal);
+        point_2 = 0.5f * (indexdistal + indexmiddle);
+        point_3 = 0.5f * (indexmiddle + indexknuckle);
 
-        if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)    // valid posture
+        if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)    // valid posture
         {
-            if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)) // 손끝 들어옴
+            if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1)) // 손끝 들어옴
             {
                 data = 2;
-                tot_len = indexObject1.transform.position.z - indexObject4.transform.position.z;
+                tot_len = indextip.z - indexknuckle.z;
                 sr.material.color = Color.black;
+
                 if (point_1.z >= cube.z - 0.1 && (point_1.x >= 0.1 && point_1.x <= 0.3 && point_1.y >= -0.1 && point_1.y <= 0.1)) // 첫째 마디 들어옴
                 {
-                    data = 2 - ((indexObject1.transform.position.z - point_1.z) * Mathf.Pow(tot_len, -1)) * 2;  // max_data = 2
+                    data = 2 - ((indextip.z - point_1.z) * Mathf.Pow(tot_len, -1)) * 2;  // max_data = 2
                     sr.material.color = Color.red;
 
                     if (point_2.z >= cube.z - 0.1 && (point_2.x >= 0.1 && point_2.x <= 0.3 && point_2.y >= -0.1 && point_2.y <= 0.1)) // 둘째 마디 들어옴
                     {
-                        data = 2 - ((indexObject1.transform.position.z - point_2.z) * Mathf.Pow(tot_len, -1)) * 2;
+                        data = 2 - ((indextip.z - point_2.z) * Mathf.Pow(tot_len, -1)) * 2;
                         sr.material.color = Color.green;
 
                         if (point_3.z >= cube.z - 0.1 && (point_3.x >= 0.1 && point_3.x <= 0.3 && point_3.y >= -0.1 && point_3.y <= 0.1)) // 셋째 마디 들어옴
                         {
-                            data = 2 - ((indexObject1.transform.position.z - point_3.z) * Mathf.Pow(tot_len, -1)) * 2;
+                            data = 2 - ((indextip.z - point_3.z) * Mathf.Pow(tot_len, -1)) * 2;
                             sr.material.color = Color.blue;
                         }
 
-                        if (indexObject4.transform.position.z >= cube.z - 0.1 && (indexObject4.transform.position.x >= 0.1 && indexObject4.transform.position.x <= 0.3 && indexObject4.transform.position.y >= -0.1 && indexObject4.transform.position.y <= 0.1))
+                        if (indexknuckle.z >= cube.z - 0.1 && (indexknuckle.x >= 0.1 && indexknuckle.x <= 0.3 && indexknuckle.y >= -0.1 && indexknuckle.y <= 0.1))
                         {
                             data = 0;
                             sr.material.color = Color.black;
@@ -259,13 +266,13 @@ public class HandTracking : MonoBehaviour
 
     private void ID_1()
     {
-        if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+        if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
         {
-            if (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)
+            if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1)
             {
-                if (peak_tip < indexObject1.transform.position.z)
+                if (peak_tip < indextip.z)
                 {
-                    peak_tip = indexObject1.transform.position.z;
+                    peak_tip = indextip.z;
 
                     if (point_3.z > 0.62)
                     {
@@ -285,7 +292,7 @@ public class HandTracking : MonoBehaviour
                     }
                 }
 
-                if (peak_tip != 0.6 && indexObject1.transform.position.z < 0.6 && peak_z != 0)
+                if (peak_tip != 0.6 && indextip.z < 0.6 && peak_z != 0)
                 {
                     Debug.Log(peak_z);
                     switch (peak_z)
@@ -313,18 +320,18 @@ public class HandTracking : MonoBehaviour
 
     private void ID_2()
     {
-        if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+        if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
         {
-            if (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1)
+            if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1)
             {
-                if (indexObject1.transform.position.z >= cube.z - 0.1)
+                if (indextip.z >= cube.z - 0.1)
                 {
-                    PIcube.transform.position = new Vector3(0.2f, 0, (float)PIcube.transform.position.z + 0.00002f);    // Cube is moving backward
+                    PIcube.transform.position = new Vector3(0.2f, 0, (float) PIcube.transform.position.z + 0.00002f);    // Cube is moving backward
                 }
 
-                if (peak_tip < indexObject1.transform.position.z)
+                if (peak_tip < indextip.z)
                 {
-                    peak_tip = indexObject1.transform.position.z;
+                    peak_tip = indextip.z;
 
                     if (point_3.z > cube.z - 0.08)
                     {
@@ -344,7 +351,7 @@ public class HandTracking : MonoBehaviour
                     }
                 }
 
-                if (peak_tip != 0.6 && indexObject1.transform.position.z < 0.6 && peak_z != 0)
+                if (peak_tip != 0.6 && indextip.z < 0.6 && peak_z != 0)
                 {
                     Debug.Log(peak_z);
 
@@ -377,9 +384,9 @@ public class HandTracking : MonoBehaviour
     {
         if (stop.Equals(false))
         {
-            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+            if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
             {
-                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1))
                 {
                     if (point_2.z >= 0.6 && past_point_2 >= 0.6)
                     {
@@ -461,9 +468,9 @@ public class HandTracking : MonoBehaviour
     {
         if (stop.Equals(false))
         {
-            if (indexObject1.transform.position.z > indexObject2.transform.position.z && indexObject2.transform.position.z > indexObject3.transform.position.z && indexObject3.transform.position.z > indexObject4.transform.position.z)
+            if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
             {
-                if (indexObject1.transform.position.z >= cube.z - 0.1 && (indexObject1.transform.position.x >= 0.1 && indexObject1.transform.position.x <= 0.3 && indexObject1.transform.position.y >= -0.1 && indexObject1.transform.position.y <= 0.1))
+                if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1))
                 {
                     if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                     {
