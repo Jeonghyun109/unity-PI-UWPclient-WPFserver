@@ -74,10 +74,6 @@ public class HandTracking : MonoBehaviour
     // for interaction design
 
     int mode = 1;   // 1:ID_1(depth에 따라), 2:ID_2(depth에 맞춰 큐브 뒤로 이동), 3:ID_3(직관적 디자인), 4:ID_4(z방향 + x방향)
-    public Button Mode_1;
-    public Button Mode_2;
-    public Button Mode_3;
-    public Button Mode_4;
 
     public GameObject sphere_1;
     public GameObject sphere_2;
@@ -551,6 +547,7 @@ public class HandTracking : MonoBehaviour
 
     public void ChangeMode (int m)
     {
+        Debug.Log("mode " + m);
         mode = m;
         C_1.material.color = Color.white;
         C_2.material.color = Color.white;
