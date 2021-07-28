@@ -32,11 +32,6 @@ using System.Text;
 public class HandTracking : MonoBehaviour
 {
     // for VisualizeHand
-    public GameObject sphereMarker;
-    GameObject indexObject1;
-    GameObject indexObject2;
-    GameObject indexObject3;
-    GameObject indexObject4;
     MixedRealityPose pose;
 
     // for DepthData
@@ -82,9 +77,8 @@ public class HandTracking : MonoBehaviour
     public GameObject sphere_1;
     public GameObject sphere_2;
     public GameObject sphere_3;
-    Renderer C_1;
-    Renderer C_2;
-    Renderer C_3;
+    Renderer C_1, C_2, C_3;
+    Color c1, c2, c3;
 
     double peak_tip = 0.6;
     int peak_z = 0; // 0: out of range, 1: operation_1, 2: operation_2, 3: operation_3
@@ -105,14 +99,11 @@ public class HandTracking : MonoBehaviour
     // mode #4
     double pos_2 = -100;   // for mode 4 deciding whether right-click or not
 
+    // for experimental interface
+    List<int> operations = new List<int>();
 
     void Start()
     {
-        indexObject1 = Instantiate(sphereMarker, this.transform);   // for IndexTip
-        indexObject2 = Instantiate(sphereMarker, this.transform);   // for IndextDistalJoint
-        indexObject3 = Instantiate(sphereMarker, this.transform);   // for IndexMiddleJoint
-        indexObject4 = Instantiate(sphereMarker, this.transform);   // for IndexKnuckle
-
         sr = PIcube.GetComponent<Renderer>();
         sr.material.color = Color.white;
 
@@ -122,6 +113,16 @@ public class HandTracking : MonoBehaviour
         C_1.material.color = Color.white;
         C_2.material.color = Color.white;
         C_3.material.color = Color.white;
+
+        for (int i = 1; i <= 3; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                operations.Add(i);
+            }
+        }
+        Shuffle(operations);
+        Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -135,6 +136,10 @@ public class HandTracking : MonoBehaviour
         VisualizeHand();
 
         DepthData();
+
+        c1 = C_1.material.color;
+        c2 = C_2.material.color;
+        c3 = C_3.material.color;
 
         if (mode.Equals(1))
         {
@@ -176,39 +181,38 @@ public class HandTracking : MonoBehaviour
 #endif
     }
 
+    private void Shuffle (List<int> operations)
+    {
+        for (int i = 0; i < operations.Count; i++)
+        {
+            int temp = operations[i];
+            int randomIndex = UnityEngine.Random.Range(0, operations.Count);
+            operations[i] = operations[randomIndex];
+            operations[randomIndex] = temp;
+        }
+    }
+
     private void VisualizeHand()
     {
-        indexObject1.GetComponent<Renderer>().enabled = false;
-        indexObject2.GetComponent<Renderer>().enabled = false;
-        indexObject3.GetComponent<Renderer>().enabled = false;
-        indexObject4.GetComponent<Renderer>().enabled = false;
         cube = PIcube.transform.position;
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexTip, Handedness.Right, out pose))
         {
-            indexObject1.GetComponent<Renderer>().enabled = true;
-            indexObject1.transform.position = pose.Position;
             indextip = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexDistalJoint, Handedness.Right, out pose))
         {
-            indexObject2.GetComponent<Renderer>().enabled = true;
-            indexObject2.transform.position = pose.Position;
             indexdistal = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexMiddleJoint, Handedness.Right, out pose))
         {
-            indexObject3.GetComponent<Renderer>().enabled = true;
-            indexObject3.transform.position = pose.Position;
             indexmiddle = pose.Position;
         }
 
         if (HandJointUtils.TryGetJointPose(TrackedHandJoint.IndexKnuckle, Handedness.Right, out pose))
         {
-            indexObject4.GetComponent<Renderer>().enabled = true;
-            indexObject4.transform.position = pose.Position;
             indexknuckle = pose.Position;
         }
     }
@@ -325,7 +329,7 @@ public class HandTracking : MonoBehaviour
             {
                 if (indextip.z >= cube.z - 0.1)
                 {
-                    PIcube.transform.position = new Vector3(0.2f, 0, (float) PIcube.transform.position.z + 0.00005f);    // Cube is moving backward
+                    PIcube.transform.position = new Vector3(0.2f, 0, (float) cube.z + 0.00005f);    // Cube is moving backward
                 }
 
                 if (peak_tip < indextip.z)
@@ -383,7 +387,7 @@ public class HandTracking : MonoBehaviour
         {
             if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
             {
-                if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1))
+                if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.1 && indextip.y <= 0.1)
                 {
                     if (point_2.z >= 0.6 && past_point_2 >= 0.6)
                     {
@@ -391,7 +395,7 @@ public class HandTracking : MonoBehaviour
                         Depressed = false;
                         timer_3 += Time.deltaTime;
 
-                        if (timer_3 >= 1.5f)
+                        if (timer_3 >= 1f)
                         {
                             Operate_3();
                             stop = true;
@@ -446,18 +450,13 @@ public class HandTracking : MonoBehaviour
         }
         else
         {
-            timer_stop += Time.deltaTime;
-
-            if (timer_stop >= 0.5f)
-            {
-                stop = false;
-                timer_2 = 0;
-                timer_3 = 0;
-                timer_stop = 0;
-                Pressed = true;
-                Depressed = true;
-                IsOneClick = false;
-            }
+            stop = false;
+            timer_2 = 0;
+            timer_3 = 0;
+            timer_stop = 0;
+            Pressed = true;
+            Depressed = true;
+            IsOneClick = false;
         }
     }
 
@@ -542,34 +541,77 @@ public class HandTracking : MonoBehaviour
     private void Operate_1 ()
     {
         Debug.Log("Mode " + mode + " : Operation 1");
-        C_1.material.color = Color.green;
-        C_2.material.color = Color.white;
-        C_3.material.color = Color.white;
+
+        if (c1 == Color.green)
+        {
+            C_1.material.color = Color.blue;
+        }
+        else if (c1 == Color.blue)
+        {
+            C_1.material.color = Color.green;
+        }
+        else
+        {
+            C_1.material.color = Color.green;
+            C_2.material.color = Color.white;
+            C_3.material.color = Color.white;
+        }
     }
 
     private void Operate_2 ()
     {
-        Debug.Log("Mode " + mode + " : Operation 1");
-        C_2.material.color = Color.green;
-        C_1.material.color = Color.white;
-        C_3.material.color = Color.white;
+        Debug.Log("Mode " + mode + " : Operation 2");
+        if (c2 == Color.green)
+        {
+            C_2.material.color = Color.blue;
+        }
+        else if (c2 == Color.blue)
+        {
+            C_2.material.color = Color.green;
+        }
+        else
+        {
+            C_2.material.color = Color.green;
+            C_1.material.color = Color.white;
+            C_3.material.color = Color.white;
+        }
     }
 
     private void Operate_3 ()
     {
-        Debug.Log("Mode " + mode + " : Operation 1");
-        C_3.material.color = Color.green;
-        C_1.material.color = Color.white;
-        C_2.material.color = Color.white;
+        Debug.Log("Mode " + mode + " : Operation 3");
+        if (c3 == Color.green)
+        {
+            C_3.material.color = Color.blue;
+        }
+        else if (c3 == Color.blue)
+        {
+            C_3.material.color = Color.green;
+        }
+        else
+        {
+            C_3.material.color = Color.green;
+            C_1.material.color = Color.white;
+            C_2.material.color = Color.white;
+        }
     }
 
     public void ChangeMode (int m)
     {
         Debug.Log("The mode is " + m + " now!");
         mode = m;
-        C_1.material.color = Color.white;
-        C_2.material.color = Color.white;
-        C_3.material.color = Color.white;
+        if (c1 != Color.white)
+        {
+            C_1.material.color = Color.white;
+        }
+        else if (c2 != Color.white)
+        {
+            C_2.material.color = Color.white;
+        }
+        else
+        {
+            C_3.material.color = Color.white;
+        }
     }
 
 #if !UNITY_EDITOR
