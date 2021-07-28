@@ -291,17 +291,17 @@ public class HandTracking : MonoBehaviour
                     switch (peak_z)
                     {
                         case 1:
-                            Operate_1();
+                            Operate_1 ();
                             peak_tip = 0.6;
                             peak_z = 0;
                             break;
                         case 2:
-                            Operate_2();
+                            Operate_2 ();
                             peak_tip = 0.6;
                             peak_z = 0;
                             break;
                         case 3:
-                            Operate_3();
+                            Operate_3 ();
                             peak_tip = 0.6;
                             peak_z = 0;
                             break;
