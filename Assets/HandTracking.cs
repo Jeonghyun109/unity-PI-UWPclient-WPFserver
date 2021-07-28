@@ -294,7 +294,6 @@ public class HandTracking : MonoBehaviour
 
                 if (peak_tip != 0.6 && indextip.z < 0.6 && peak_z != 0)
                 {
-                    Debug.Log(peak_z);
                     switch (peak_z)
                     {
                         case 1:
@@ -326,7 +325,7 @@ public class HandTracking : MonoBehaviour
             {
                 if (indextip.z >= cube.z - 0.1)
                 {
-                    PIcube.transform.position = new Vector3(0.2f, 0, (float) PIcube.transform.position.z + 0.00002f);    // Cube is moving backward
+                    PIcube.transform.position = new Vector3(0.2f, 0, (float) PIcube.transform.position.z + 0.00005f);    // Cube is moving backward
                 }
 
                 if (peak_tip < indextip.z)
@@ -353,8 +352,6 @@ public class HandTracking : MonoBehaviour
 
                 if (peak_tip != 0.6 && indextip.z < 0.6 && peak_z != 0)
                 {
-                    Debug.Log(peak_z);
-
                     switch (peak_z)
                     {
                         case 1:
@@ -544,6 +541,7 @@ public class HandTracking : MonoBehaviour
 
     private void Operate_1 ()
     {
+        Debug.Log("Mode " + mode + " : Operation 1");
         C_1.material.color = Color.green;
         C_2.material.color = Color.white;
         C_3.material.color = Color.white;
@@ -551,6 +549,7 @@ public class HandTracking : MonoBehaviour
 
     private void Operate_2 ()
     {
+        Debug.Log("Mode " + mode + " : Operation 1");
         C_2.material.color = Color.green;
         C_1.material.color = Color.white;
         C_3.material.color = Color.white;
@@ -558,6 +557,7 @@ public class HandTracking : MonoBehaviour
 
     private void Operate_3 ()
     {
+        Debug.Log("Mode " + mode + " : Operation 1");
         C_3.material.color = Color.green;
         C_1.material.color = Color.white;
         C_2.material.color = Color.white;
@@ -565,7 +565,7 @@ public class HandTracking : MonoBehaviour
 
     public void ChangeMode (int m)
     {
-        Debug.Log("mode " + m);
+        Debug.Log("The mode is " + m + " now!");
         mode = m;
         C_1.material.color = Color.white;
         C_2.material.color = Color.white;

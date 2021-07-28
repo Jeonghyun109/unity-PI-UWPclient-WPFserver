@@ -683,7 +683,8 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4679913627213182660, guid: 4b829e947ae32f846b74608a608dcb2a, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 4b829e947ae32f846b74608a608dcb2a, type: 3}
 --- !u!1 &1609446272
 GameObject:
@@ -1279,5 +1280,13 @@ PrefabInstance:
       propertyPath: iconQuadTexture
       value: 
       objectReference: {fileID: 2800000, guid: 4494cfaf424cdde49895b91e2b559258, type: 3}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7764430965257853583, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 2578629586724297254, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 7764430964621742827, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 2578629586160833090, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 7764430964362664510, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 2578629586436627095, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 8914153399042581202, guid: 449527953b546a149b701366a2edf0c0, type: 3}
+    - {fileID: 3727997978308862587, guid: 449527953b546a149b701366a2edf0c0, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 449527953b546a149b701366a2edf0c0, type: 3}
