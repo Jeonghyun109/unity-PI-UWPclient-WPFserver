@@ -90,17 +90,23 @@ public class HandTracking : MonoBehaviour
     Boolean stop = false;
 
     // mode #3
-    float d_click_t = 0.5f;
+    float d_click_t = 0.5f; // recognition time for operation #2
     Boolean IsOneClick = false;
     Boolean IsDoubleClick = false;
-    Boolean Pressed = true;
-    Boolean Depressed = false;
+    Boolean Pressed = true; // (Pressed) ? operation #3 : operation #1 or #2
+    Boolean Depressed = false;  // for operation #1, #2 => Recognize each operation when depressing finger from the cube
 
     // mode #4
-    double pos_2 = -100;   // for mode 4 deciding whether right-click or not
+    double pos_2 = -100;   // for mode 4 deciding whether operation #3 or not
 
     // for experimental interface
     List<int> operations = new List<int>();
+    public TextMeshPro instruction;
+    int start = 0;
+    int reset = 0;
+    int success = 0;
+    int try_num = 0;
+    int experiment_t = 0;
 
     void Start()
     {
@@ -113,16 +119,6 @@ public class HandTracking : MonoBehaviour
         C_1.material.color = Color.white;
         C_2.material.color = Color.white;
         C_3.material.color = Color.white;
-
-        for (int i = 1; i <= 3; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                operations.Add(i);
-            }
-        }
-        Shuffle(operations);
-        Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -158,6 +154,25 @@ public class HandTracking : MonoBehaviour
             ID_4();
         }
 
+        if (start.Equals(1))
+        {
+            Debug.Log("Start");
+            GetTime();
+            Debug.Log(experiment_t + " 1 0 1 select 0 0 1");
+
+            for (int i = 1; i <= 3; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    operations.Add(i);
+                }
+            }
+
+            Shuffle(operations);
+            // Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
+            StartCoroutine(RandomInstruction(operations));
+        }
+
         // update past_points to rememeber the present z postision values of 3 points
         past_point_1 = point_1.z;
         past_point_2 = point_2.z;
@@ -175,10 +190,14 @@ public class HandTracking : MonoBehaviour
         // don't send the same depth value considering effectivity
         if (data != past_data)
         {
-            SendDepth();    // for TCP connection
+            SendInformation (data.ToString());    // for TCP connection
             past_data = data;
         }
 #endif
+    }
+    private void GetTime ()
+    {
+        experiment_t = new DateTime().Millisecond;
     }
 
     private void Shuffle (List<int> operations)
@@ -190,6 +209,25 @@ public class HandTracking : MonoBehaviour
             operations[i] = operations[randomIndex];
             operations[randomIndex] = temp;
         }
+    }
+
+    IEnumerator RandomInstruction (List<int> operations)
+    {
+        float random_delay;
+        
+        for (int i = 0; i < operations.Count; i++)
+        {
+            random_delay = (float) UnityEngine.Random.Range(5, 10);
+            yield return new WaitForSeconds(random_delay);
+
+            instruction.SetText("Mode " + mode + ": Do Operation " + operations[i]);
+
+            while (success.Equals(0))
+            {
+                // Wait until success
+            }
+        }
+        // Send End message
     }
 
     private void VisualizeHand()
@@ -614,8 +652,26 @@ public class HandTracking : MonoBehaviour
         }
     }
 
+    public void ExperimentState (string state)
+    {
+        if (state.Equals("start"))
+        {
+            Debug.Log("Start clicked!");
+            start = 1;
+            reset = 0;
+        }
+        else
+        {   // "reset"
+         
+            reset = 1;
+            start = 0;
+        }
+        try_num = 0;
+        success = 0;
+    }
+
 #if !UNITY_EDITOR
-    private async void SendDepth()
+    public async void SendInformation (string request)
     {
         try
         {
@@ -627,8 +683,6 @@ public class HandTracking : MonoBehaviour
 
                 await streamSocket.ConnectAsync(hostName, "50000");
 
-                //Debug.Log(data);
-                string request = data.ToString();
                 using (Stream outputStream = streamSocket.OutputStream.AsStreamForWrite())
                 {
                     using (var streamWriter = new StreamWriter(outputStream))
