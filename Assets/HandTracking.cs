@@ -110,6 +110,9 @@ public class HandTracking : MonoBehaviour
     int past_mode = 1;
     float random_delay;
     Boolean selected = false;
+    int reset = 0;
+    Boolean part_end = false;   // whether all the instructions of each mode finished or not
+    string past_instruction;
 
     void Start()
     {
@@ -176,7 +179,7 @@ public class HandTracking : MonoBehaviour
         // don't send the same depth value considering effectivity
         if (data != past_data)
         {
-            SendInformation (data.ToString());    // for TCP connection
+            SendInformation(data.ToString());    // for TCP connection
             past_data = data;
         }
 #endif
@@ -291,17 +294,17 @@ public class HandTracking : MonoBehaviour
                     switch (peak_z)
                     {
                         case 1:
-                            Operate_1 ();
+                            Operate_1();
                             peak_tip = 0.6;
                             peak_z = 0;
                             break;
                         case 2:
-                            Operate_2 ();
+                            Operate_2();
                             peak_tip = 0.6;
                             peak_z = 0;
                             break;
                         case 3:
-                            Operate_3 ();
+                            Operate_3();
                             peak_tip = 0.6;
                             peak_z = 0;
                             break;
@@ -319,7 +322,7 @@ public class HandTracking : MonoBehaviour
             {
                 if (indextip.z >= cube.z - 0.1)
                 {
-                    PIcube.transform.position = new Vector3(0.2f, 0, (float) cube.z + 0.00005f);    // Cube is moving backward
+                    PIcube.transform.position = new Vector3(0.2f, 0, (float)cube.z + 0.00005f);    // Cube is moving backward
                 }
 
                 if (peak_tip < indextip.z)
@@ -528,7 +531,7 @@ public class HandTracking : MonoBehaviour
         }
     }
 
-    private void Operate_1 ()
+    private void Operate_1()
     {
         Debug.Log("Mode " + mode + " : Operation 1");
         user_choice = 1;
@@ -550,7 +553,7 @@ public class HandTracking : MonoBehaviour
         }
     }
 
-    private void Operate_2 ()
+    private void Operate_2()
     {
         Debug.Log("Mode " + mode + " : Operation 2");
         user_choice = 2;
@@ -572,7 +575,7 @@ public class HandTracking : MonoBehaviour
         }
     }
 
-    private void Operate_3 ()
+    private void Operate_3()
     {
         Debug.Log("Mode " + mode + " : Operation 3");
         user_choice = 3;
@@ -593,13 +596,17 @@ public class HandTracking : MonoBehaviour
             C_2.material.color = Color.white;
         }
     }
+    private void return_instruction () {
+        instruction.SetText(past_instruction);
+    }
 
     public void ChangeMode (int m)
     {
-        Debug.Log("The mode is " + m + " now!");
+
         if (m.Equals(1))
         {
             Debug.Log("Reset experiment!");
+            part_end = false;
             instruction.enabled = false;
             past_mode = 1;
             mode = m;
@@ -615,16 +622,25 @@ public class HandTracking : MonoBehaviour
             {
                 C_3.material.color = Color.white;
             }
-            Shuffle(operations);
-            StartCoroutine(RandomInstruction(operations));
         }
-        else if (past_mode != (m - 1))
+        else if (past_mode != (m - 1) && part_end.Equals(true))
         {
             instruction.enabled = true;
+            past_instruction = instruction.text;
             instruction.SetText("You have to choose mode " + (past_mode + 1));
         }
-        else
+        else if (part_end.Equals(false))
         {
+            instruction.enabled = true;
+            past_instruction = instruction.text;
+            instruction.SetText("You can't change mode!");
+            Invoke("return_instruction", 1f);
+        }
+        else if (part_end.Equals(true))
+        {
+            Debug.Log("The mode is " + m + " now!");
+            instruction.enabled = false;
+            part_end = false;
             past_mode = m;
             mode = m;
             if (c1 != Color.white)
@@ -667,13 +683,13 @@ public class HandTracking : MonoBehaviour
 
             GetTime();
             Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " start 0 0 0");
-            while (success.Equals(0))
+            while (success.Equals(0) && reset.Equals(0))
             {
                 if (user_choice.Equals(operations[i]) && selected.Equals(true))
                 {
                     success = 1;
                 }
-                else if (user_choice != operations[i] && selected.Equals(true))
+                else if (user_choice != operations[i] && selected.Equals(true)) // fail
                 {
                     instruction.color = Color.red;
                     try_num += 1;
@@ -687,30 +703,48 @@ public class HandTracking : MonoBehaviour
                 }
                 yield return new WaitForSeconds(0.1f);  // Coroutine을 사용할 때, while 문 내부에 WaitForSeconds를 추가하지 않으면 Unity가 프로그램 중에 멈추고 응답하지 않는 문제 발생
             }
-            try_num += 1;
-            instruction.color = Color.blue;
-            yield return new WaitForSeconds(0.5f);
-            GetTime();
-            Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " end " + try_num + " 1 " + user_choice);
+
+            if (reset.Equals(1))
+            {
+                instruction.SetText("Reset : Press start button");
+                yield return new WaitForSeconds(0.1f);
+                break;
+            }
+            else // success
+            {
+                try_num += 1;
+                instruction.color = Color.blue;
+                yield return new WaitForSeconds(0.5f);
+                GetTime();
+                Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " end " + try_num + " 1 " + user_choice);
+            }
             success = 0;
             try_num = 0;
             user_choice = 0;
             selected = false;
         }
-        instruction.color = Color.white;
-        Debug.Log("You finished all instructions of mode " + mode);
+
+        if (reset != 1) 
+        {
+            instruction.color = Color.white;
+            Debug.Log("You finished all instructions of mode " + mode);
         
-        if (mode.Equals(4))
-        {
-            instruction.SetText("Your experiment is finished!");
-            start = 0;
+            if (mode.Equals(4))
+            {
+                instruction.SetText("Your experiment is finished!");
+                start = 0;
+            }
+            else
+            {
+                instruction.SetText("Change mode to " + (mode + 1));
+                part_end = true;
+            }
+            GetTime();
+            Debug.Log(experiment_t + " " + mode + " " + operations.Count + " " + operations[operations.Count - 1] + " finish " + try_num + " 1 " + user_choice);
         }
-        else
-        {
-            instruction.SetText("Change mode to " + (mode + 1));
-        }
-        GetTime();
-        Debug.Log(experiment_t + " " + mode + " " + operations.Count + " " + operations[operations.Count - 1] + " finish " + try_num + " 1 " + user_choice);
+
+        reset = 0;
+
     }
 
     private void GetTime()
@@ -731,7 +765,8 @@ public class HandTracking : MonoBehaviour
             }
             else
             {
-                Debug.Log("Start");
+                instruction.enabled = true;
+                instruction.SetText("Start Experiment!");
                 GetTime();
                 Debug.Log(experiment_t + " 1 0 1 select 0 0 1");
 
@@ -752,6 +787,7 @@ public class HandTracking : MonoBehaviour
         }
         else
         {   // "reset"
+            reset = 1;
             GetTime();
             Debug.Log(experiment_t + " " + mode + " 0 0 reset " + try_num + " 0 " + user_choice);
             start = 0;
