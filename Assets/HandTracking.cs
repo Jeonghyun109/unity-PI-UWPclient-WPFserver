@@ -106,7 +106,6 @@ public class HandTracking : MonoBehaviour
     int user_choice;
     int success = 0;
     int try_num = 0;    // # of tries of each instruction
-    int fail = 0;   // 1 when user fails to satisfy the instruction.
     int experiment_t = 0;   // for experiment time log
     int past_mode = 1;
     float random_delay;
@@ -602,6 +601,7 @@ public class HandTracking : MonoBehaviour
         {
             Debug.Log("Reset experiment!");
             instruction.enabled = false;
+            past_mode = 1;
             mode = m;
             if (c1 != Color.white)
             {
@@ -625,6 +625,7 @@ public class HandTracking : MonoBehaviour
         }
         else
         {
+            past_mode = m;
             mode = m;
             if (c1 != Color.white)
             {
@@ -674,7 +675,6 @@ public class HandTracking : MonoBehaviour
                 }
                 else if (user_choice != operations[i] && selected.Equals(true))
                 {
-                    fail = 1;
                     instruction.color = Color.red;
                     try_num += 1;
                     GetTime();
@@ -683,7 +683,6 @@ public class HandTracking : MonoBehaviour
                     yield return new WaitForSeconds(0.5f);
 
                     instruction.color = Color.white;
-                    fail = 0;
                     selected = false;
                 }
                 yield return new WaitForSeconds(0.1f);  // Coroutine을 사용할 때, while 문 내부에 WaitForSeconds를 추가하지 않으면 Unity가 프로그램 중에 멈추고 응답하지 않는 문제 발생
@@ -694,11 +693,11 @@ public class HandTracking : MonoBehaviour
             GetTime();
             Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " end " + try_num + " 1 " + user_choice);
             success = 0;
-            fail = 0;
             try_num = 0;
             user_choice = 0;
             selected = false;
         }
+        instruction.color = Color.white;
         Debug.Log("You finished all instructions of mode " + mode);
         
         if (mode.Equals(4))
@@ -756,7 +755,6 @@ public class HandTracking : MonoBehaviour
             GetTime();
             Debug.Log(experiment_t + " " + mode + " 0 0 reset " + try_num + " 0 " + user_choice);
             start = 0;
-            fail = 0;
             instruction.enabled = false;
             ChangeMode(1);
         }
