@@ -103,10 +103,15 @@ public class HandTracking : MonoBehaviour
     List<int> operations = new List<int>();
     public TextMeshPro instruction;
     int start = 0;
-    int reset = 0;
+    int user_choice;
     int success = 0;
-    int try_num = 0;
-    int experiment_t = 0;
+    int try_num = 0;    // # of tries of each instruction
+    int fail = 0;   // 1 when user fails to satisfy the instruction.
+    int experiment_t = 0;   // for experiment time log
+    int past_mode = 1;
+    float instruction_t = 0;
+    float random_delay;
+    Boolean selected = false;
 
     void Start()
     {
@@ -119,6 +124,8 @@ public class HandTracking : MonoBehaviour
         C_1.material.color = Color.white;
         C_2.material.color = Color.white;
         C_3.material.color = Color.white;
+
+        instruction.enabled = false;
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -154,25 +161,6 @@ public class HandTracking : MonoBehaviour
             ID_4();
         }
 
-        if (start.Equals(1))
-        {
-            Debug.Log("Start");
-            GetTime();
-            Debug.Log(experiment_t + " 1 0 1 select 0 0 1");
-
-            for (int i = 1; i <= 3; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    operations.Add(i);
-                }
-            }
-
-            Shuffle(operations);
-            // Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
-            StartCoroutine(RandomInstruction(operations));
-        }
-
         // update past_points to rememeber the present z postision values of 3 points
         past_point_1 = point_1.z;
         past_point_2 = point_2.z;
@@ -194,40 +182,6 @@ public class HandTracking : MonoBehaviour
             past_data = data;
         }
 #endif
-    }
-    private void GetTime ()
-    {
-        experiment_t = new DateTime().Millisecond;
-    }
-
-    private void Shuffle (List<int> operations)
-    {
-        for (int i = 0; i < operations.Count; i++)
-        {
-            int temp = operations[i];
-            int randomIndex = UnityEngine.Random.Range(0, operations.Count);
-            operations[i] = operations[randomIndex];
-            operations[randomIndex] = temp;
-        }
-    }
-
-    IEnumerator RandomInstruction (List<int> operations)
-    {
-        float random_delay;
-        
-        for (int i = 0; i < operations.Count; i++)
-        {
-            random_delay = (float) UnityEngine.Random.Range(5, 10);
-            yield return new WaitForSeconds(random_delay);
-
-            instruction.SetText("Mode " + mode + ": Do Operation " + operations[i]);
-
-            while (success.Equals(0))
-            {
-                // Wait until success
-            }
-        }
-        // Send End message
     }
 
     private void VisualizeHand()
@@ -579,6 +533,8 @@ public class HandTracking : MonoBehaviour
     private void Operate_1 ()
     {
         Debug.Log("Mode " + mode + " : Operation 1");
+        user_choice = 1;
+        selected = true;
 
         if (c1 == Color.green)
         {
@@ -599,6 +555,9 @@ public class HandTracking : MonoBehaviour
     private void Operate_2 ()
     {
         Debug.Log("Mode " + mode + " : Operation 2");
+        user_choice = 2;
+        selected = true;
+
         if (c2 == Color.green)
         {
             C_2.material.color = Color.blue;
@@ -618,6 +577,9 @@ public class HandTracking : MonoBehaviour
     private void Operate_3 ()
     {
         Debug.Log("Mode " + mode + " : Operation 3");
+        user_choice = 3;
+        selected = true;
+
         if (c3 == Color.green)
         {
             C_3.material.color = Color.blue;
@@ -637,37 +599,172 @@ public class HandTracking : MonoBehaviour
     public void ChangeMode (int m)
     {
         Debug.Log("The mode is " + m + " now!");
-        mode = m;
-        if (c1 != Color.white)
+        if (m.Equals(1))
         {
-            C_1.material.color = Color.white;
+            Debug.Log("Reset experiment!");
+            instruction.enabled = false;
+            mode = m;
+            if (c1 != Color.white)
+            {
+                C_1.material.color = Color.white;
+            }
+            else if (c2 != Color.white)
+            {
+                C_2.material.color = Color.white;
+            }
+            else
+            {
+                C_3.material.color = Color.white;
+            }
+            Shuffle(operations);
+            //RandomInstruction(operations);
         }
-        else if (c2 != Color.white)
+        else if (past_mode != (m - 1))
         {
-            C_2.material.color = Color.white;
+            instruction.enabled = true;
+            instruction.SetText("You have to choose mode " + (past_mode + 1));
         }
         else
         {
-            C_3.material.color = Color.white;
+            mode = m;
+            if (c1 != Color.white)
+            {
+                C_1.material.color = Color.white;
+            }
+            else if (c2 != Color.white)
+            {
+                C_2.material.color = Color.white;
+            }
+            else
+            {
+                C_3.material.color = Color.white;
+            }
+            Shuffle(operations);
+            StartCoroutine(RandomInstruction(operations));
         }
+    }
+
+    private void Shuffle(List<int> operations)
+    {
+        for (int i = 0; i < operations.Count; i++)
+        {
+            int temp = operations[i];
+            int randomIndex = UnityEngine.Random.Range(0, operations.Count);
+            operations[i] = operations[randomIndex];
+            operations[randomIndex] = temp;
+        }
+    }
+
+    IEnumerator RandomInstruction(List<int> operations)
+    {
+        for (int i = 0; i < operations.Count; i++)
+        {
+            random_delay = (float) UnityEngine.Random.Range(5, 10);
+            yield return new WaitForSeconds(random_delay);
+            instruction.enabled = true;
+            instruction_t = 0;
+            instruction.SetText("Mode " + mode + ": Do Operation " + operations[i]);
+            instruction.color = Color.white;
+
+            GetTime();
+            Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " start 0 0 0");
+            while (success.Equals(0))
+            {
+                if (user_choice.Equals(operations[i]) && selected.Equals(true))
+                {
+                    success = 1;
+                }
+                else if (user_choice != operations[i] && selected.Equals(true))
+                {
+                    fail = 1;
+                    instruction.color = Color.red;
+                    try_num += 1;
+                    GetTime();
+                    Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " doing " + try_num + " 0 " + user_choice);
+
+                    yield return new WaitForSeconds(0.5f);
+
+                    instruction.color = Color.white;
+                    fail = 0;
+                    selected = false;
+                }
+                yield return new WaitForSeconds(0.1f);  // Coroutine을 사용할 때, while 문 내부에 WaitForSeconds를 추가하지 않으면 Unity가 프로그램 중에 멈추고 응답하지 않는 문제 발생
+            }
+            try_num += 1;
+            instruction.color = Color.blue;
+            yield return new WaitForSeconds(0.5f);
+            GetTime();
+            Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " end " + try_num + " 1 " + user_choice);
+            success = 0;
+            fail = 0;
+            try_num = 0;
+            user_choice = 0;
+            selected = false;
+        }
+        Debug.Log("You finished all instructions of mode " + mode);
+        
+        if (mode.Equals(4))
+        {
+            instruction.SetText("Your experiment is finished!");
+            start = 0;
+        }
+        else
+        {
+            instruction.SetText("Change mode to " + (mode + 1));
+        }
+        GetTime();
+        Debug.Log(experiment_t + " " + mode + " " + operations.Count + " " + operations[operations.Count - 1] + " finish " + try_num + " 1 " + user_choice);
+    }
+
+    private void GetTime()
+    {
+        var now = DateTime.Now.ToLocalTime();
+        var span = (now - new DateTime(2021, 07, 30, 0, 0, 0, 0).ToLocalTime());    // timespan을 위한 new DateTime을 최대한 가까운 시간으로 수정하지 않으면 -값이 나옴!! 주의하자 이 부분 (in 범위 벗어나서 overflow)
+        experiment_t = (int)span.TotalMilliseconds;
     }
 
     public void ExperimentState (string state)
     {
         if (state.Equals("start"))
         {
-            Debug.Log("Start clicked!");
-            start = 1;
-            reset = 0;
+            if (start.Equals(1))
+            {
+                instruction.enabled = true;
+                instruction.SetText("Please press reset button.");
+            }
+            else
+            {
+                Debug.Log("Start");
+                GetTime();
+                Debug.Log(experiment_t + " 1 0 1 select 0 0 1");
+
+                for (int i = 1; i <= 3; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        operations.Add(i);
+                    }
+                }
+                Debug.Log("Start clicked!");
+                start = 1;
+
+                Shuffle(operations);
+                // Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
+                StartCoroutine(RandomInstruction(operations));
+            }
         }
         else
         {   // "reset"
-         
-            reset = 1;
+            GetTime();
+            Debug.Log(experiment_t + " " + mode + " 0 0 reset " + try_num + " 0 " + user_choice);
             start = 0;
+            fail = 0;
+            instruction.enabled = false;
+            ChangeMode(1);
         }
         try_num = 0;
         success = 0;
+        selected = false;
     }
 
 #if !UNITY_EDITOR
