@@ -109,7 +109,6 @@ public class HandTracking : MonoBehaviour
     int fail = 0;   // 1 when user fails to satisfy the instruction.
     int experiment_t = 0;   // for experiment time log
     int past_mode = 1;
-    float instruction_t = 0;
     float random_delay;
     Boolean selected = false;
 
@@ -617,7 +616,7 @@ public class HandTracking : MonoBehaviour
                 C_3.material.color = Color.white;
             }
             Shuffle(operations);
-            //RandomInstruction(operations);
+            StartCoroutine(RandomInstruction(operations));
         }
         else if (past_mode != (m - 1))
         {
@@ -662,7 +661,6 @@ public class HandTracking : MonoBehaviour
             random_delay = (float) UnityEngine.Random.Range(5, 10);
             yield return new WaitForSeconds(random_delay);
             instruction.enabled = true;
-            instruction_t = 0;
             instruction.SetText("Mode " + mode + ": Do Operation " + operations[i]);
             instruction.color = Color.white;
 
