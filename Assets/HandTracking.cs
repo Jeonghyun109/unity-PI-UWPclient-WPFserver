@@ -113,6 +113,7 @@ public class HandTracking : MonoBehaviour
     int reset = 0;
     Boolean part_end = false;   // whether all the instructions of each mode finished or not
     string past_instruction;
+    string exp_log;
 
     void Start()
     {
@@ -682,7 +683,11 @@ public class HandTracking : MonoBehaviour
             instruction.color = Color.white;
 
             GetTime();
-            Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " start 0 0 0");
+            exp_log = experiment_t.ToString() + " " + mode.ToString() + " " + (i + 1).ToString() + " " + operations[i].ToString() + " start 0 0 0";
+            Debug.Log(exp_log);
+#if !UNITY_EDITOR
+            SendInformation(exp_log);
+#endif
             while (success.Equals(0) && reset.Equals(0))
             {
                 if (user_choice.Equals(operations[i]) && selected.Equals(true))
@@ -694,7 +699,11 @@ public class HandTracking : MonoBehaviour
                     instruction.color = Color.red;
                     try_num += 1;
                     GetTime();
-                    Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " doing " + try_num + " 0 " + user_choice);
+                    exp_log = experiment_t.ToString() + " " + mode.ToString() + " " + (i + 1).ToString() + " " + operations[i].ToString() + " doing " + try_num.ToString() + " 0 " + user_choice.ToString();
+                    Debug.Log(exp_log);
+#if !UNITY_EDITOR
+                    SendInformation(exp_log);
+#endif
 
                     yield return new WaitForSeconds(0.5f);
 
@@ -716,7 +725,11 @@ public class HandTracking : MonoBehaviour
                 instruction.color = Color.blue;
                 yield return new WaitForSeconds(0.5f);
                 GetTime();
-                Debug.Log(experiment_t + " " + mode + " " + (i + 1) + " " + operations[i] + " end " + try_num + " 1 " + user_choice);
+                exp_log = experiment_t.ToString() + " " + mode.ToString() + " " + (i + 1).ToString() + " " + operations[i].ToString() + " end " + try_num.ToString() + " 1 " + user_choice.ToString();
+                Debug.Log(exp_log);
+#if !UNITY_EDITOR
+                SendInformation(exp_log);
+#endif
             }
             success = 0;
             try_num = 0;
@@ -740,7 +753,11 @@ public class HandTracking : MonoBehaviour
                 part_end = true;
             }
             GetTime();
-            Debug.Log(experiment_t + " " + mode + " " + operations.Count + " " + operations[operations.Count - 1] + " finish " + try_num + " 1 " + user_choice);
+            exp_log = experiment_t.ToString() + " " + mode.ToString() + " " + operations.Count.ToString() + " " + operations[operations.Count - 1].ToString() + " finish " + try_num.ToString() + " 1 " + user_choice.ToString();
+            Debug.Log(exp_log);
+#if !UNITY_EDITOR
+            SendInformation(exp_log);
+#endif
         }
 
         reset = 0;
@@ -768,7 +785,11 @@ public class HandTracking : MonoBehaviour
                 instruction.enabled = true;
                 instruction.SetText("Start Experiment!");
                 GetTime();
-                Debug.Log(experiment_t + " 1 0 1 select 0 0 1");
+                exp_log = experiment_t.ToString() + " 1 0 1 select 0 0 1";
+                Debug.Log(exp_log);
+#if !UNITY_EDITOR
+                SendInformation(exp_log);
+#endif
 
                 for (int i = 1; i <= 3; i++)
                 {
@@ -789,7 +810,11 @@ public class HandTracking : MonoBehaviour
         {   // "reset"
             reset = 1;
             GetTime();
-            Debug.Log(experiment_t + " " + mode + " 0 0 reset " + try_num + " 0 " + user_choice);
+            exp_log = experiment_t.ToString() + " " + mode.ToString() + " 0 0 reset " + try_num.ToString() + " 0 " + user_choice.ToString();
+            Debug.Log(exp_log);
+#if !UNITY_EDITOR
+            SendInformation(exp_log);
+#endif
             start = 0;
             instruction.enabled = false;
             ChangeMode(1);
