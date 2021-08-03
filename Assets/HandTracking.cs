@@ -43,15 +43,14 @@ public class HandTracking : MonoBehaviour
 
     private float tot_len = 1.0f;
 
-    public static Vector3 indextip;
+    Vector3 indextip;
     Vector3 indexdistal;
     Vector3 indexmiddle;
     Vector3 indexknuckle;
-    public static Vector3 point_1;
-    public static Vector3 point_2;
-    public static Vector3 point_3;
+    Vector3 point_1;
+    Vector3 point_2;
+    Vector3 point_3;
 
-    double past_point_1 = 0;
     double past_point_2 = 0;
     double past_point_3 = 0;
 
@@ -156,6 +155,9 @@ public class HandTracking : MonoBehaviour
         }
         else if (mode.Equals(3))
         {
+            // update past_points to rememeber the present z postision values of 3 points
+            past_point_2 = point_2.z;
+            past_point_3 = point_3.z;
             ID_3();
         }
         else
@@ -163,10 +165,7 @@ public class HandTracking : MonoBehaviour
             ID_4();
         }
 
-        // update past_points to rememeber the present z postision values of 3 points
-        past_point_1 = point_1.z;
-        past_point_2 = point_2.z;
-        past_point_3 = point_3.z;
+
 
 #if UNITY_EDITOR
         // for TCP
@@ -290,7 +289,7 @@ public class HandTracking : MonoBehaviour
                     }
                 }
 
-                if (peak_tip != 0.6 && indextip.z < 0.6 && peak_z != 0)
+                if (peak_tip != 0.6 && indextip.z < 0.6)
                 {
                     switch (peak_z)
                     {
@@ -308,6 +307,9 @@ public class HandTracking : MonoBehaviour
                             Operate_3();
                             peak_tip = 0.6;
                             peak_z = 0;
+                            break;
+                        case 0:
+                            peak_tip = 0.6;
                             break;
                     }
                 }
@@ -348,7 +350,7 @@ public class HandTracking : MonoBehaviour
                     }
                 }
 
-                if (peak_tip != 0.6 && indextip.z < 0.6 && peak_z != 0)
+                if (peak_tip != 0.6 && indextip.z < 0.6)
                 {
                     switch (peak_z)
                     {
@@ -366,6 +368,9 @@ public class HandTracking : MonoBehaviour
                             Operate_3();
                             peak_tip = 0.6;
                             peak_z = 0;
+                            break;
+                        case 0:
+                            peak_tip = 0.6;
                             break;
                     }
 
@@ -681,6 +686,7 @@ public class HandTracking : MonoBehaviour
             instruction.enabled = true;
             instruction.SetText("Mode " + mode + ": Do Operation " + operations[i]);
             instruction.color = Color.white;
+            user_choice = 0;
 
             GetTime();
             exp_log = experiment_t.ToString() + "," + mode.ToString() + "," + (i + 1).ToString() + "," + operations[i].ToString() + ",start,0,0,0";
