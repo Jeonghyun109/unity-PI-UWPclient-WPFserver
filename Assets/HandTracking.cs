@@ -106,12 +106,9 @@ public class HandTracking : MonoBehaviour
     int success = 0;
     int try_num = 0;    // # of tries of each instruction
     int experiment_t = 0;   // for experiment time log
-    int past_mode = 1;
     float random_delay;
     Boolean selected = false;
     int reset = 0;
-    Boolean part_end = false;   // whether all the instructions of each mode finished or not
-    string past_instruction;
     string exp_log;
 
     void Start()
@@ -165,6 +162,11 @@ public class HandTracking : MonoBehaviour
             ID_4();
         }
 
+        if (Input.inputString != null)
+        {
+            ChangeMode(Input.inputString);
+        }
+        
 
 
 #if UNITY_EDITOR
@@ -388,7 +390,7 @@ public class HandTracking : MonoBehaviour
             {
                 if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05)
                 {
-                    if (point_2.z >= 0.6 && past_point_2 >= 0.6)
+                    if (point_3.z >= 0.6 && past_point_3 >= 0.6)
                     {
                         Pressed = true;
                         Depressed = false;
@@ -602,53 +604,14 @@ public class HandTracking : MonoBehaviour
             C_2.material.color = Color.white;
         }
     }
-    private void return_instruction () {
-        instruction.SetText(past_instruction);
-    }
 
-    public void ChangeMode (int m)
+    public void ChangeMode (string m)
     {
-
-        if (m.Equals(1))
-        {
-            Debug.Log("Reset experiment!");
-            part_end = false;
-            instruction.enabled = false;
-            past_mode = 1;
-            mode = m;
-            if (c1 != Color.white)
-            {
-                C_1.material.color = Color.white;
-            }
-            else if (c2 != Color.white)
-            {
-                C_2.material.color = Color.white;
-            }
-            else
-            {
-                C_3.material.color = Color.white;
-            }
-        }
-        else if (past_mode != (m - 1) && part_end.Equals(true))
-        {
-            instruction.enabled = true;
-            past_instruction = instruction.text;
-            instruction.SetText("You have to choose mode " + (past_mode + 1));
-        }
-        else if (part_end.Equals(false))
-        {
-            instruction.enabled = true;
-            past_instruction = instruction.text;
-            instruction.SetText("You can't change mode!");
-            Invoke("return_instruction", 1f);
-        }
-        else if (part_end.Equals(true))
+        if (m.Equals("1") || m.Equals("2") || m.Equals("3") || m.Equals("4"))
         {
             Debug.Log("The mode is " + m + " now!");
             instruction.enabled = false;
-            part_end = false;
-            past_mode = m;
-            mode = m;
+            mode = int.Parse(m);
             if (c1 != Color.white)
             {
                 C_1.material.color = Color.white;
@@ -746,18 +709,10 @@ public class HandTracking : MonoBehaviour
         if (reset != 1) 
         {
             instruction.color = Color.white;
-            Debug.Log("You finished all instructions of mode " + mode);
+            instruction.SetText("You finished all instructions of mode " + mode);
         
-            if (mode.Equals(4))
-            {
-                instruction.SetText("Your experiment is finished!");
-                start = 0;
-            }
-            else
-            {
-                instruction.SetText("Change mode to " + (mode + 1));
-                part_end = true;
-            }
+            Debug.Log("Please change mode!");
+
             GetTime();
             exp_log = experiment_t.ToString() + "," + mode.ToString() + "," + operations.Count.ToString() + "," + operations[operations.Count - 1].ToString() + ",finish," + try_num.ToString() + ",1," + user_choice.ToString();
             Debug.Log(exp_log);
@@ -809,7 +764,6 @@ public class HandTracking : MonoBehaviour
 
                 Shuffle(operations);
                 // Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
-                StartCoroutine(RandomInstruction(operations));
             }
         }
         else
@@ -823,7 +777,6 @@ public class HandTracking : MonoBehaviour
 #endif
             start = 0;
             instruction.enabled = false;
-            ChangeMode(1);
         }
         try_num = 0;
         success = 0;
