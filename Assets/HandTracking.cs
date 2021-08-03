@@ -92,7 +92,7 @@ public class HandTracking : MonoBehaviour
     float d_click_t = 0.5f; // recognition time for operation #2
     Boolean IsOneClick = false;
     Boolean IsDoubleClick = false;
-    Boolean Pressed = true; // (Pressed) ? operation #3 : operation #1 or #2
+    Boolean Pressed = false; // (Pressed) ? operation #3 : operation #1 or #2
     Boolean Depressed = false;  // for operation #1, #2 => Recognize each operation when depressing finger from the cube
 
     // mode #4
@@ -124,6 +124,13 @@ public class HandTracking : MonoBehaviour
         C_3.material.color = Color.white;
 
         instruction.enabled = false;
+        for (int i = 1; i <= 3; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                operations.Add(i);
+            }
+        }
 
 #if UNITY_EDITOR
         formatter = new BinaryFormatter();
@@ -249,6 +256,10 @@ public class HandTracking : MonoBehaviour
                         }
                     }
                 }
+                else
+                {
+                    data = -1;
+                }
             }
             else
             {
@@ -327,7 +338,7 @@ public class HandTracking : MonoBehaviour
             {
                 if (indextip.z >= cube.z - 0.1)
                 {
-                    PIcube.transform.position = new Vector3(0.2f, 0, (float)cube.z + 0.00005f);    // Cube is moving backward
+                    PIcube.transform.position = new Vector3(0.2f, -0.05f, (float)cube.z + 0.00005f);    // Cube is moving backward
                 }
 
                 if (peak_tip < indextip.z)
@@ -376,7 +387,7 @@ public class HandTracking : MonoBehaviour
                             break;
                     }
 
-                    PIcube.transform.position = new Vector3(0.2f, 0, 0.7f);
+                    PIcube.transform.position = new Vector3(0.2f, -0.05f, 0.7f);
                 }
             }
         }
@@ -390,58 +401,61 @@ public class HandTracking : MonoBehaviour
             {
                 if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05)
                 {
-                    if (point_3.z >= 0.6 && past_point_3 >= 0.6)
+                    if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
                     {
-                        Pressed = true;
-                        Depressed = false;
                         timer_3 += Time.deltaTime;
-
                         if (timer_3 >= 1f)
                         {
                             Operate_3();
+                            Pressed = true;
                             stop = true;
+                            IsOneClick = false;
                             timer_3 = 0;
-                            Pressed = false;
                         }
                     }
                     else
                     {
-                        Pressed = false;
-                        if (IsOneClick && ((Time.time - timer_2) > d_click_t) && Depressed.Equals(true))
-                        {
-                            Operate_1();
-                            IsOneClick = false;
-                            Pressed = true;
-                            stop = true;
-                            timer_2 = 0;
-                        }
+                        timer_3 = 0;
 
-                        if (point_2.z >= 0.6 && Pressed.Equals(false))
+                        if (point_2.z >= 0.6)
                         {
-                            Depressed = false;
-                            IsDoubleClick = false;
                             if (!IsOneClick)
                             {
                                 timer_2 = Time.time;
                                 IsOneClick = true;
                             }
 
-                            else if (IsOneClick && ((Time.time - timer_2) < d_click_t))
+                            else if (IsOneClick && ((Time.time - timer_2) < d_click_t) && Depressed.Equals(true))
                             {
                                 IsDoubleClick = true;
                             }
                         }
                         else if (point_2.z < 0.6)
                         {
-                            Depressed = true;
+                            if (IsOneClick)
+                            {
+                                Depressed = true;
+                            }
 
-                            if (IsDoubleClick)
+
+                            if (IsOneClick && ((Time.time - timer_2) > d_click_t))
+                            {
+
+                                Operate_1();
+
+                                IsOneClick = false;
+                                IsDoubleClick = false;
+                                timer_2 = 0;
+                                Depressed = false;
+                                Pressed = false;
+                            }
+
+                            else if (IsDoubleClick && ((Time.time - timer_2) < d_click_t))
                             {
                                 Operate_2();
                                 IsOneClick = false;
                                 IsDoubleClick = false;
-                                Pressed = true;
-                                stop = true;
+                                Depressed = false;
                                 timer_2 = 0;
                             }
                         }
@@ -451,13 +465,16 @@ public class HandTracking : MonoBehaviour
         }
         else
         {
-            stop = false;
-            timer_2 = 0;
-            timer_3 = 0;
-            timer_stop = 0;
-            Pressed = true;
-            Depressed = true;
-            IsOneClick = false;
+            timer_stop += Time.deltaTime;
+            if(timer_stop >= 0.5f)
+            {
+                stop = false;
+                IsDoubleClick = false;
+                IsOneClick = false;
+                timer_stop = 0;
+                Pressed = false;
+                Depressed = false;
+            }
         }
     }
 
@@ -610,6 +627,11 @@ public class HandTracking : MonoBehaviour
         if (m.Equals("1") || m.Equals("2") || m.Equals("3") || m.Equals("4"))
         {
             Debug.Log("The mode is " + m + " now!");
+
+            GetTime();
+            exp_log = experiment_t.ToString() + ",1,0,1,select,0,0,1";
+            Debug.Log(exp_log);
+
             instruction.enabled = false;
             mode = int.Parse(m);
             if (c1 != Color.white)
@@ -644,12 +666,12 @@ public class HandTracking : MonoBehaviour
     {
         for (int i = 0; i < operations.Count; i++)
         {
+            user_choice = 0;
             random_delay = (float) UnityEngine.Random.Range(5, 10);
             yield return new WaitForSeconds(random_delay);
             instruction.enabled = true;
             instruction.SetText("Mode " + mode + ": Do Operation " + operations[i]);
             instruction.color = Color.white;
-            user_choice = 0;
 
             GetTime();
             exp_log = experiment_t.ToString() + "," + mode.ToString() + "," + (i + 1).ToString() + "," + operations[i].ToString() + ",start,0,0,0";
@@ -745,20 +767,9 @@ public class HandTracking : MonoBehaviour
             {
                 instruction.enabled = true;
                 instruction.SetText("Start Experiment!");
-                GetTime();
-                exp_log = experiment_t.ToString() + ",1,0,1,select,0,0,1";
-                Debug.Log(exp_log);
 #if !UNITY_EDITOR
                 SendInformation(exp_log);
 #endif
-
-                for (int i = 1; i <= 3; i++)
-                {
-                    for (int j = 0; j < 5; j++)
-                    {
-                        operations.Add(i);
-                    }
-                }
                 Debug.Log("Start clicked!");
                 start = 1;
 
@@ -777,6 +788,19 @@ public class HandTracking : MonoBehaviour
 #endif
             start = 0;
             instruction.enabled = false;
+
+            if (c1 != Color.white)
+            {
+                C_1.material.color = Color.white;
+            }
+            else if (c2 != Color.white)
+            {
+                C_2.material.color = Color.white;
+            }
+            else
+            {
+                C_3.material.color = Color.white;
+            }
         }
         try_num = 0;
         success = 0;
