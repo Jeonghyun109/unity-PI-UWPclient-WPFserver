@@ -92,7 +92,6 @@ public class HandTracking : MonoBehaviour
     float d_click_t = 0.5f; // recognition time for operation #2
     Boolean IsOneClick = false;
     Boolean IsDoubleClick = false;
-    Boolean Pressed = false; // (Pressed) ? operation #3 : operation #1 or #2
     Boolean Depressed = false;  // for operation #1, #2 => Recognize each operation when depressing finger from the cube
 
     // mode #4
@@ -407,7 +406,6 @@ public class HandTracking : MonoBehaviour
                         if (timer_3 >= 1f)
                         {
                             Operate_3();
-                            Pressed = true;
                             stop = true;
                             IsOneClick = false;
                             timer_3 = 0;
@@ -447,7 +445,6 @@ public class HandTracking : MonoBehaviour
                                 IsDoubleClick = false;
                                 timer_2 = 0;
                                 Depressed = false;
-                                Pressed = false;
                             }
 
                             else if (IsDoubleClick && ((Time.time - timer_2) < d_click_t))
@@ -472,7 +469,6 @@ public class HandTracking : MonoBehaviour
                 IsDoubleClick = false;
                 IsOneClick = false;
                 timer_stop = 0;
-                Pressed = false;
                 Depressed = false;
             }
         }
@@ -628,10 +624,6 @@ public class HandTracking : MonoBehaviour
         {
             Debug.Log("The mode is " + m + " now!");
 
-            GetTime();
-            exp_log = experiment_t.ToString() + ",1,0,1,select,0,0,1";
-            Debug.Log(exp_log);
-
             instruction.enabled = false;
             mode = int.Parse(m);
             if (c1 != Color.white)
@@ -646,8 +638,62 @@ public class HandTracking : MonoBehaviour
             {
                 C_3.material.color = Color.white;
             }
-            Shuffle(operations);
-            StartCoroutine(RandomInstruction(operations));
+        }
+        else if (m.Equals("`")) // start
+        {
+            if (start.Equals(1))
+            {
+                instruction.enabled = true;
+                instruction.SetText("Please press reset button.");
+            }
+            else
+            {
+                instruction.enabled = true;
+                instruction.SetText("Start Mode " + mode);
+
+                GetTime();
+                exp_log = experiment_t.ToString() + ",1,0,1,select,0,0,1";
+                Debug.Log(exp_log);
+#if !UNITY_EDITOR
+                SendInformation(exp_log);
+#endif
+                start = 1;
+
+                // Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
+                Shuffle(operations);
+                StartCoroutine(RandomInstruction(operations));
+            }
+            try_num = 0;
+            success = 0;
+            selected = false;
+        }
+        else if (m.Equals("0")) // reset
+        {
+            reset = 1;
+            GetTime();
+            exp_log = experiment_t.ToString() + "," + mode.ToString() + ",0,0,reset," + try_num.ToString() + ",0," + user_choice.ToString();
+            Debug.Log(exp_log);
+#if !UNITY_EDITOR
+            SendInformation(exp_log);
+#endif
+            start = 0;
+            instruction.enabled = false;
+
+            if (c1 != Color.white)
+            {
+                C_1.material.color = Color.white;
+            }
+            else if (c2 != Color.white)
+            {
+                C_2.material.color = Color.white;
+            }
+            else
+            {
+                C_3.material.color = Color.white;
+            }
+            try_num = 0;
+            success = 0;
+            selected = false;
         }
     }
 
@@ -752,59 +798,6 @@ public class HandTracking : MonoBehaviour
         var now = DateTime.Now.ToLocalTime();
         var span = (now - new DateTime(2021, 07, 30, 0, 0, 0, 0).ToLocalTime());    // timespan을 위한 new DateTime을 최대한 가까운 시간으로 수정하지 않으면 -값이 나옴!! 주의하자 이 부분 (in 범위 벗어나서 overflow)
         experiment_t = (int)span.TotalMilliseconds;
-    }
-
-    public void ExperimentState (string state)
-    {
-        if (state.Equals("start"))
-        {
-            if (start.Equals(1))
-            {
-                instruction.enabled = true;
-                instruction.SetText("Please press reset button.");
-            }
-            else
-            {
-                instruction.enabled = true;
-                instruction.SetText("Start Experiment!");
-#if !UNITY_EDITOR
-                SendInformation(exp_log);
-#endif
-                Debug.Log("Start clicked!");
-                start = 1;
-
-                Shuffle(operations);
-                // Debug.Log("Operations order is ... " + string.Join(",", operations.ToArray()));
-            }
-        }
-        else
-        {   // "reset"
-            reset = 1;
-            GetTime();
-            exp_log = experiment_t.ToString() + "," + mode.ToString() + ",0,0,reset," + try_num.ToString() + ",0," + user_choice.ToString();
-            Debug.Log(exp_log);
-#if !UNITY_EDITOR
-            SendInformation(exp_log);
-#endif
-            start = 0;
-            instruction.enabled = false;
-
-            if (c1 != Color.white)
-            {
-                C_1.material.color = Color.white;
-            }
-            else if (c2 != Color.white)
-            {
-                C_2.material.color = Color.white;
-            }
-            else
-            {
-                C_3.material.color = Color.white;
-            }
-        }
-        try_num = 0;
-        success = 0;
-        selected = false;
     }
 
 #if !UNITY_EDITOR
