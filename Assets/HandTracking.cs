@@ -226,29 +226,29 @@ public class HandTracking : MonoBehaviour
 
         if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)    // valid posture
         {
-            if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05)) // 손끝 들어옴
+            if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.2 && indextip.y <= 0)) // 손끝 들어옴
             {
                 data = 2;
                 tot_len = indextip.z - indexknuckle.z;
                 sr.material.color = Color.black;
 
-                if (point_1.z >= cube.z - 0.1 && (point_1.x >= 0.1 && point_1.x <= 0.3 && point_1.y >= -0.15 && point_1.y <= 0.05)) // 첫째 마디 들어옴
+                if (point_1.z >= cube.z - 0.1 && (point_1.x >= 0.1 && point_1.x <= 0.3 && point_1.y >= -0.2 && point_1.y <= 0)) // 첫째 마디 들어옴
                 {
                     data = 2 - ((indextip.z - point_1.z) * Mathf.Pow(tot_len, -1)) * 2;  // max_data = 2
                     sr.material.color = Color.red;
 
-                    if (point_2.z >= cube.z - 0.1 && (point_2.x >= 0.1 && point_2.x <= 0.3 && point_2.y >= -0.15 && point_2.y <= 0.05)) // 둘째 마디 들어옴
+                    if (point_2.z >= cube.z - 0.1 && (point_2.x >= 0.1 && point_2.x <= 0.3 && point_2.y >= -0.2 && point_2.y <= 0)) // 둘째 마디 들어옴
                     {
                         data = 2 - ((indextip.z - point_2.z) * Mathf.Pow(tot_len, -1)) * 2;
                         sr.material.color = Color.green;
 
-                        if (point_3.z >= cube.z - 0.1 && (point_3.x >= 0.1 && point_3.x <= 0.3 && point_3.y >= -0.15 && point_3.y <= 0.05)) // 셋째 마디 들어옴
+                        if (point_3.z >= cube.z - 0.1 && (point_3.x >= 0.1 && point_3.x <= 0.3 && point_3.y >= -0.2 && point_3.y <= 0)) // 셋째 마디 들어옴
                         {
                             data = 2 - ((indextip.z - point_3.z) * Mathf.Pow(tot_len, -1)) * 2;
                             sr.material.color = Color.blue;
                         }
 
-                        if (indexknuckle.z >= cube.z - 0.1 && (indexknuckle.x >= 0.1 && indexknuckle.x <= 0.3 && indexknuckle.y >= -0.15 && indexknuckle.y <= 0.05))
+                        if (indexknuckle.z >= cube.z - 0.1 && (indexknuckle.x >= 0.1 && indexknuckle.x <= 0.3 && indexknuckle.y >= -0.2 && indexknuckle.y <= 0))
                         {
                             data = 0;
                             sr.material.color = Color.black;
@@ -277,7 +277,7 @@ public class HandTracking : MonoBehaviour
     {
         if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
         {
-            if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05)
+            if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.2 && indextip.y <= 0)
             {
                 if (peak_tip < indextip.z)
                 {
@@ -333,11 +333,11 @@ public class HandTracking : MonoBehaviour
     {
         if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
         {
-            if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05)
+            if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.2 && indextip.y <= 0)
             {
                 if (indextip.z >= cube.z - 0.1)
                 {
-                    PIcube.transform.position = new Vector3(0.2f, -0.05f, (float)cube.z + 0.00005f);    // Cube is moving backward
+                    PIcube.transform.position = new Vector3(0.2f, -0.1f, (float)cube.z + 0.00005f);    // Cube is moving backward
                 }
 
                 if (peak_tip < indextip.z)
@@ -386,7 +386,7 @@ public class HandTracking : MonoBehaviour
                             break;
                     }
 
-                    PIcube.transform.position = new Vector3(0.2f, -0.05f, 0.7f);
+                    PIcube.transform.position = new Vector3(0.2f, -0.1f, 0.7f);
                 }
             }
         }
@@ -398,7 +398,7 @@ public class HandTracking : MonoBehaviour
         {
             if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
             {
-                if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05)
+                if (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.2 && indextip.y <= 0)
                 {
                     if (point_2.z >= 0.6 && point_2.z <= 0.62 && past_point_2 >= 0.6 && past_point_2 <= 0.62)
                     {
@@ -480,7 +480,7 @@ public class HandTracking : MonoBehaviour
         {
             if (indextip.z > indexdistal.z && indexdistal.z > indexmiddle.z && indexmiddle.z > indexknuckle.z)
             {
-                if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.15 && indextip.y <= 0.05))
+                if (indextip.z >= cube.z - 0.1 && (indextip.x >= 0.1 && indextip.x <= 0.3 && indextip.y >= -0.2 && indextip.y <= 0))
                 {
                     if (point_3.z >= 0.6 && point_3.z <= 0.62 && past_point_3 >= 0.6 && past_point_3 <= 0.62)
                     {
@@ -638,8 +638,10 @@ public class HandTracking : MonoBehaviour
             {
                 C_3.material.color = Color.white;
             }
+
+            start = 0;
         }
-        else if (m.Equals("`")) // start
+        else if (m.Equals("9")) // start
         {
             if (start.Equals(1))
             {
