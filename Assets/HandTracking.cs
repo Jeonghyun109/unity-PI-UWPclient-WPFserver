@@ -654,7 +654,7 @@ public class HandTracking : MonoBehaviour
                 instruction.SetText("Start Mode " + mode);
 
                 GetTime();
-                exp_log = experiment_t.ToString() + ",1,0,1,select,0,0,1";
+                exp_log = experiment_t.ToString() + "," + mode + ",0,1,select,0,0,1";
                 Debug.Log(exp_log);
 #if !UNITY_EDITOR
                 SendInformation(exp_log);
