@@ -219,22 +219,36 @@ public class HandTracking : MonoBehaviour
                 SendInformation("11");
                 num_1++;
             }
+            num_2 = 0;
+            num_3 = 0;
+            num_0 = 0;
         }
         else if (discrete_feed_2) {
             if (num_2 < 10) {
                 SendInformation("22");
                 num_2++;
             }
+            num_1 = 0;
+            num_3 = 0;
+            num_0 = 0;
         }
         else if (discrete_feed_3) {
             if (num_3 < 10) {
                 SendInformation("33");
                 num_3++;
             }
+            num_1 = 0;
+            num_2 = 0;
+            num_0 = 0;
         }
-        else if (num_0 < 10) {
-            SendInformation("44");
-            num_0++;
+        else {
+            if (num_0 < 10) {
+                SendInformation("44");
+                num_0++;
+            }
+            num_1 = 0;
+            num_2 = 0;
+            num_3 = 0;
         }
 #endif
     }
@@ -354,9 +368,12 @@ public class HandTracking : MonoBehaviour
                         timer_1 = (float)0;
                     }
                 }
-                discrete_feed_1 = false;
-                discrete_feed_2 = false;
-                discrete_feed_3 = false;
+                else
+                {
+                    discrete_feed_1 = false;
+                    discrete_feed_2 = false;
+                    discrete_feed_3 = false;
+                }
             }
             else
             {
